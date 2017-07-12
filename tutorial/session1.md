@@ -38,9 +38,11 @@ In future evolutions of this tutorial, we'll try to show how to use almost any c
 
 - Data Source: *NewsAPI* - NewsAPI provides free API access 
 - Processing Framework: *Spark* - Spark is one of the more developed of these solutions and is currently a popular choice in industry (e.g.: something that's really good for a resume). Specifically this tutorial will use a Databricks account to get free access to an existing Spark cluster to avoid having to deal with setup of computing hardware--there are great resources for learning how to do this, but it is outside of the scope of learning to do something interesting with Scala
-- Database: *Cassandra* - Cassandra is increasing in popularity for data processing, is distributed by default, and there is a Cassandra connector built into Spark, which makes it easy to hook the two together [note to self: can we actually do databasing with this setup? figure out how much of a pain it is to get Cassandra set up and accessible to a Databricks Spark notebook]
+- Database: *Hive* - Hive is supported out of the box by Databricks, so we'll use this for starters so we can get straight to working with data, rather than paying for compute resources and spending a lot of time and headache installing and running a database.
 
 A future version of this will probably also include creating and using a dashboard to allow a user to change what kinds of filters are applied and visualize the result.
+
+# Time to actually do something!
 
 ## Getting access
 
@@ -132,17 +134,47 @@ So, this is where Spark makes things a little weird. Everything above where we'v
 
 Why does it work this way? When you're handling data sets that are broken apart and spread over several servers, you have to have a plan for what to do with each piece, to make sure the output is the same as it would be if the program were run on a single giant server. For our purposes, we'll be able to use `map` and `flatMap` the same way we do in plain Scala, and `collect` will act as the equivalent of `run`.
 
+## Reformatting the output
+
+Now that we've reviewed the code that gets the news articles, we can make the results easier to read, display, and use.
+
+The response data from NewsAPI is in a format called JSON. If you've done web programming before, you've probably already dealt with this extensively. The strategies for reading and writing JSON are different, depending on what language you're working in. In JavaScript, it is very straightforward to read and write JSON (JavaScript Object Notation), because it was create to exactly represent a JavaScript Object.
+
+Scala models objects differently, which means we have to do a small amount of processing to transform it into a more useable format. 
+
+[make case classes for the data, and a function that takes a JSON packet and returns a typed instance]
+
 ## Filter incoming data
 
+[process the rdd into a dataframe]
 [add filter functions]
 [add a way to configure which filters get applied using flags]
 
 ## Use a database to store state
 
+The cluster created earlier will already have a Hive database available on it. You don't have to do anything special to connect to it. Just add the following command to your application:
+
+```
+dataFrame.write.saveAsTable("newsRecords")
+```
+
+There's a snag though: Hive is an immutable data store, which means that records cannot be re-written or updated. We can only write new records. This also makes sense for our application, because when we make a request to NewsAPI for more news, we will probably get copies of things we've already seen before. We don't need or want to process them again, so we'll have to do some checking early in the pipeline to discard records we've already processed (e.g.: ones that are already in Hive).
+
+[check db for records and drop matches]
+
+There's another thing that databases are really valuable for: storing settings that are used to determine the behavior of our app. Settings, such as the name of our data source, could be hard-coded, but this means that in order to check Ars Technica instead of the BBC, we have to make a change to code and re-deploy the app, which is not the preferred way to do it (some sites used to have problems with this, where if for instance a blogger wanted to post an article, they had to have a programmer update the code of the website--much better to just write the new option to the database and have the app respond).
+
 [move the state of the flags into the db]
+
+Now that the settings are stored in the database, they can be changed by updating the database records, but without a UI, this means you have to have access to Hive and know how to write a records with command-line tools. Still a pain! We want a simple way to update that setting, such as a pull-down menu in a UI.
+
 [create a way to change the state of the flags while the application is running]
 
 ## How to display the output?
 
 [probably start with live update field in the notebook]
-[webapp?]
+[webapp? combined with the one that changes the db settings?]
+
+# Notes
+
+Some snippets of code borrowed from [the Databricks docs](https://docs.databricks.com/) including use of the Apache DefaultHttpClient and functions for writing to Hive.
