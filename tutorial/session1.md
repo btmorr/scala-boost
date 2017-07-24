@@ -140,7 +140,9 @@ Now that we've reviewed the code that gets the news articles, we can make the re
 
 The response data from NewsAPI is in a format called JSON. If you've done web programming before, you've probably already dealt with this extensively. The strategies for reading and writing JSON are different, depending on what language you're working in. In JavaScript, it is very straightforward to read and write JSON (JavaScript Object Notation), because it was create to exactly represent a JavaScript Object.
 
-Scala models objects differently, which means we have to do a small amount of processing to transform it into a more useable format. 
+Scala models objects differently, which means we have to do a small amount of processing to transform it into a more useable format. [There are a _lot_ of different ways to accomplish this](https://manuel.bernhardt.io/2015/11/06/a-quick-tour-of-json-libraries-in-scala/). For the tutorial, we'll use [sphere-json](https://github.com/sphereio/sphere-scala-libs/tree/master/json).
+
+In Scala projects, you have to tell the compiler where to go and find libraries and which version to grab. In Databricks, click on the "Workspace" icon on the sidebar. At the top of the first column, click the down arrow next to the "Workspace" column header, then select "Create"->"Library". In the pulldown menu for Source, select "Maven Coordinate". In the Coordinate field, enter "io.sphere:sphere-json_2.11:0.8.2". Expand the Advanced Options, and in the Repository field, enter ""
 
 [make case classes for the data, and a function that takes a JSON packet and returns a typed instance]
 
