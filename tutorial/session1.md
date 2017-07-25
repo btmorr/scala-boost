@@ -42,7 +42,11 @@ In future evolutions of this tutorial, we'll try to show how to use almost any c
 
 A future version of this will probably also include creating and using a dashboard to allow a user to change what kinds of filters are applied and visualize the result.
 
+By the way, if you want to use something different, find out what the latest version of a library is, etc, [the Maven Repository index](http://mvnrepository.com/) is the place to search--this is something I use often in development.
+
 # Time to actually do something!
+
+Ok, it's time to actually write code. This section has been designed around using a web-based installation of Scala and other tools, but if you want to practice and work on things locally, this repo also includes a runnable app based on the tutorial. You just have to have Scala and sbt installed.
 
 ## Getting access
 
