@@ -24,7 +24,10 @@ object Schemas {
     implicit val jsonArticle: JSON[Article] = jsonProduct(Article.apply _)
     implicit val jsonNewsApiResponse: JSON[NewsApiResponse] = jsonProduct(NewsApiResponse.apply _)
     
-    def deserialize(json: String) = 
-      fromJSON[NewsApiResponse](json).toOption
+    def deserialize(json: String): NewsApiResponse =
+      fromJSON[NewsApiResponse](json)
+        .toOption.getOrElse(
+          NewsApiResponse( "Deserialization failure", "", "", Nil )
+        )
   }
 }
