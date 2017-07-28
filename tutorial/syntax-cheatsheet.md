@@ -143,3 +143,10 @@ val thisBrowser: Option[Browser] = getUserInput() // not defined, assume it is a
 
 println(s"Is the browser supported? ${validBrowsers.contains(thisBrowser.getOrElse(InvalidBrowser))}")
 ```
+
+## Additional links
+
+Especially because this is a new tutorial, there's plenty missing. Here are some links to point you in the right direction for additional help (feel free to add more if you):
+
+- [Official Syntax Cheatsheet](http://docs.scala-lang.org/cheatsheets/)
+- [Imports](https://en.wikibooks.org/wiki/Scala/Import)
