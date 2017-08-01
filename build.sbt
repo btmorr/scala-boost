@@ -1,3 +1,5 @@
+lazy val sparkVersion = "2.1.1"
+
 lazy val boost = (project in file("."))
   .settings(
     name := "scala-boost",
@@ -6,9 +8,10 @@ lazy val boost = (project in file("."))
     libraryDependencies ++= Seq(
     	"io.sphere" %% "sphere-json" % "0.8.2",
       "org.apache.httpcomponents" % "httpclient" % "4.5.3",
-    	"org.apache.spark" % "spark-core_2.11" % "2.1.1" // % "provided"
+    	"org.apache.spark" %% "spark-core" % sparkVersion /* % "provided" */,
+      "org.apache.spark" %% "spark-streaming" % sparkVersion /* % "provided" */
     ),
-    /* Spark 2.2.0 requires an exact version of Jackson for json handling
+    /* Spark 2.x requires an exact version of Jackson for json handling
      * For more info, see:
      *   - https://stackoverflow.com/questions/41464444/play-and-spark-incompatible-jackson-versions
      *   - https://mvnrepository.com/artifact/org.apache.spark/spark-core_2.11/2.2.0
