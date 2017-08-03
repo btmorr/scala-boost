@@ -5,12 +5,18 @@ import com.github.btmorr.tutorial.Schemas.{Article, NewsApiResponse}
 /* Common functionality used in both NewsPoll and NewsStream defined here
  */
 object NewsOps {
-  def makeNewsApiRequest(url: String): String = {
+  def makeNewsApiRequest(url: String): String = try {
     val client = new org.apache.http.impl.client.DefaultHttpClient()
     val request = new org.apache.http.client.methods.HttpGet( url )
     val response = client.execute( request )
     val handler = new org.apache.http.impl.client.BasicResponseHandler()
-    handler.handleResponse( response ).trim
+    val res = handler.handleResponse( response ).trim
+    println(s"====> Res: ${res.take(80)}...")
+    res
+  } catch {
+    case e: Exception =>
+      println(s"===> Exception in request: $e")
+      ""
   }
 
   def prettyPrintResponse(apiResponse: NewsApiResponse) = println(
@@ -70,14 +76,14 @@ object NewsStream extends App {
   // Before running this app, the NEWSAPI_KEY environment variable must be
   val newsApiKey = sys.env.getOrElse( "NEWSAPI_KEY", throw new Exception( "NEWSAPI_KEY environment variable must be set before running this application" ) )
 
-  val batchFrequencySeconds = 1
+  val batchFrequencySeconds = 5
   val ssc = SparkInit.streamingContext( batchFrequencySeconds )
 
   val source = "bbc-news"
   val requestString = s"https://newsapi.org/v1/articles?source=$source&sortBy=top&apiKey=$newsApiKey"
 
   // make a request to NewsAPI once per minute
-  val requestFrequencySeconds = 60
+  val requestFrequencySeconds = 10
   val uriStream = ssc.receiverStream(new PollingSource(requestFrequencySeconds, requestString))
 
   val articleStream = for {
@@ -93,5 +99,13 @@ object NewsStream extends App {
   })
 
   ssc.start()
-  ssc.awaitTerminationOrTimeout(5 * 5 * 1000)
+  /* `awaitTerminationOrTimeout` times out after the specified amount of time, even if operations are being conducted.
+   * Using `awaitTermination` to allow the operation to run until Ctl-C is pressed.
+   */
+  //ssc.awaitTerminationOrTimeout(10 * 5 * 1000)
+  ssc.awaitTermination
+
+  val stopSparkContext = true
+  val shutdownGracefully = true
+  ssc.stop(stopSparkContext, shutdownGracefully)
 }

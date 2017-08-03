@@ -5,7 +5,7 @@ import org.apache.spark.{SparkConf, SparkContext}
 
 object SparkInit {
   private val appName = "news-stream"
-  private val master = "local[2]"
+  private val master = "local[3]"
   private val conf = new SparkConf().setAppName( appName ).setMaster( master )
 
   lazy val sparkContext = new SparkContext( conf )
