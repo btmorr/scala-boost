@@ -142,7 +142,7 @@ Why does it work this way? When you're handling data sets that are broken apart 
 
 ## Reformatting the output
 
-Now that we've reviewed the code that gets the news articles, we can make the results easier to read, display, and use.
+Now that we've reviewed the code that gets the news articles, we can make the results easier to read, display, and use. If you're stuck, an example of a working version of the code thus far is available in this repo. Check out [the step0 package](../src/main/scala/step0/NewsPoll.scala) for a version that works with a local Spark installation.
 
 The response data from NewsAPI is in a format called JSON. If you've done web programming before, you've probably already dealt with this extensively. The strategies for reading and writing JSON are different, depending on what language you're working in. In JavaScript, it is very straightforward to read and write JSON (JavaScript Object Notation), because it was create to exactly represent a JavaScript Object.
 
@@ -261,7 +261,7 @@ Now we can call `Schemas.Ops.deserialize("<json_string>")` and get back a NewsAp
 
 ## Use a database to store state
 
-The cluster created earlier will already have a Hive database available on it. You don't have to do anything special to connect to it. Just add the following command to your application:
+As before, if you're stuck, there is code available in [the step1 package](../src/main/scala/step1/NewsPoll.scala) to help you get un-stuck. Now, the cluster created earlier will already have a Hive database available on it. You don't have to do anything special to connect to it. Just add the following command to your application:
 
 ```
 dataFrame.write.saveAsTable("newsRecords")

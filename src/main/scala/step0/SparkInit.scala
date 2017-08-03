@@ -1,4 +1,5 @@
 package com.github.btmorr.tutorial
+package step0
 
 import org.apache.spark.streaming._
 import org.apache.spark.{SparkConf, SparkContext}
