@@ -10,7 +10,7 @@ The goal of this tutorial is to get the reader as quickly as possible to actuall
 
 This tutorial assumes that you have at least basic experience programming in some language. Pretty much any one will do: Python, C, Java, R, Ruby, etc. It will touch on some advanced topics, including distributed systems, but does not require previous knowledge or experience with those topics. Working through the tutorial should take between _?_ and _?_ hours of work (estimate, based on the wonderful folks who have helped test and refine it, and learned Scala in the process).
 
-The next few sections are background on the different types of compoenents you'll add or build. If you want to get right to doing things, skip down to [Time to actually do something!](#time-to-actually-do-something!).
+The next few sections are background on the different types of compoenents you'll add or build. If you want to get right to doing things, skip down to [Time to actually do something!](#time-to-actually-do-something).
 
 ## Data Source
 
@@ -72,13 +72,13 @@ Now, we’ll create a notebook and attach it to the cluster (you could have mult
 
 First, you’ll want to add your API key. Normally, you’d have some kind of sophisticated secret-management system, but we’ll put the API key into a variable. In the first cell, type:
 
-```
+```scala
 val newsApiKey = "d3b5c<your-key-here>46f411f16e13"
 ```
 
 We get the data from NewsAPI by making HTTP GET requests to an endpoint provided by their site. In the first cell, we’ll add:
 
-```
+```scala
 val source = "bbc-news"
 val requestString = s"https://newsapi.org/v1/articles?source=$source&sortBy=top&apiKey=$newsApiKey"
 ```
@@ -87,7 +87,7 @@ The `requestString` variable now contains the whole address we need to make the 
 
 After running that cell, hover your mouse at the bottom-center of the cell and click the + sign that pops up. This gives you a new cell to work with. Paste this into that cell and run it:
 
-```
+```scala
 val rdd = sc.parallelize(requestString :: Nil)
 val contents = rdd.map(url => {
   val client = new org.apache.http.impl.client.DefaultHttpClient()
@@ -100,39 +100,39 @@ val contents = rdd.map(url => {
 
 Ok, cool! It got back some data! But it’s completely unformatted and unreadable...  First, let's understand what all of that code does, and then we'll make the output something we can work with.
 
-```
+```scala
 val rdd = sc.parallelize( Seq( requestString ) )
 ```
 
 The basic data structure in Spark is an "RDD" or Resilient Distributed Document. Basically, the data is split out and pieces of it are copied to every server in the cluster. This makes it possible to work on a dataset that is multiple terabytes or petabytes, even though any one server only has a handful of gigabytes of memory. The `parallelize` function takes a sequence (a.k.a. list) of items of data, and turns it into an RDD. 
 
-```
+```scala
 val contents = rdd.map(url => {
 ```
 
 This means "for every element in rdd, call it `url` and then do whatever is in the following curly-braces to it--once you're done, put the resulting sequence into a variable named `contents`". It's slightly silly to do this with a list of only one item, but it becomes powerful quickly when we want to process a whole bunch of things.
 
-```
+```scala
 val client = new org.apache.http.impl.client.DefaultHttpClient()
 ```
 
 This creates an HTTP client, which is the thing that will actually communicate to the NewsAPI server. There are other libraries that provide HTTP clients, and each has its own quirks and benefits. For anything more than a simple request, I'd recommend looking into [http4s](https://github.com/http4s/http4s).
 
-```
+```scala
 val request = new org.apache.http.client.methods.HttpGet(url)
 val response = client.execute(request)
 ```
 
 The Apache DefaultHttpClient uses a set of data structures to provide some additional information that it needs to know what exactly to send to the NewsAPI server. The first line tells it that the request a GET request (as opposed to [POST or the several other options](https://developer.mozilla.org/en-US/docs/Web/HTTP/Methods)). The second line is the one that actually sends the request to the server.
 
-```
+```scala
 val handler = new org.apache.http.impl.client.BasicResponseHandler()
 handler.handleResponse(response).trim.toString
 ```
 
 These two lines set up a parser that is able to decode the HTTP response, and turns the result into a string.
 
-```
+```scala
 }).collect()
 ```
 
@@ -224,6 +224,8 @@ object Schemas {
 }
 ```
 
+The `apply` method is automatically created when you use the `case` keyword with a class, and `apply _` basically means "take the input that's given to this function, and pass it to the apply method", which creates a new instance of the class using that input data.
+
 We can create one more helper that we'll use for translation. To do the full translation from JSON string to NewsApiResponse, we have do several things:
 
 1. Use the `fromJSON[T]` function from sphere-json, where T is our data type (NewsApiResponse)
@@ -241,7 +243,8 @@ object Schemas {
     
     def deserialize(json: String): NewsApiResponse =
       fromJSON[NewsApiResponse](json)
-        .toOption.getOrElse(
+        .toOption
+        .getOrElse(
           NewsApiResponse( "Deserialization failure", "", "", Nil )
         )
   }
@@ -272,9 +275,9 @@ There's another thing that databases are really valuable for: storing settings t
 
 [move the state of the flags into the db]
 
-Now that the settings are stored in the database, they can be changed by updating the database records, but without a UI, this means you have to have access to Hive and know how to write a records with command-line tools. Still a pain! We want a simple way to update that setting, such as a pull-down menu in a UI.
+Now that the settings are stored in the database, they can be changed by updating the database records, but without a UI, this means you have to have access to Hive and know how to write a records with command-line tools. Still a pain! We're not building a UI with pull-down menus in this example, but those objects are handled by regular functions on the backend, so we can write and use a function that sets flags in the database.
 
-[create a way to change the state of the flags while the application is running]
+[database flag read/write functions]
 
 ## How to display the output?
 
