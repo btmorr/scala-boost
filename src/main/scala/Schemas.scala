@@ -1,8 +1,5 @@
 package com.github.btmorr.tutorial
 
-import io.sphere.json.generic._
-import io.sphere.json._
-
 object Schemas {
   case class Article(
     author: String,
@@ -21,6 +18,9 @@ object Schemas {
     )
 
   object Ops {
+    import io.sphere.json.generic._
+    import io.sphere.json._
+
     implicit val jsonArticle: JSON[Article] = jsonProduct(Article.apply _)
     implicit val jsonNewsApiResponse: JSON[NewsApiResponse] = jsonProduct(NewsApiResponse.apply _)
     

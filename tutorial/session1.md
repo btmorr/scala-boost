@@ -4,11 +4,13 @@
 
 Background: I am a professional Scala developer, and have also worked in C, C++, and Python. I decided to work with Scala because of the types of problems it is being used to solve in industry, and because it has some language features that I like, such as a relatively robust type system and better support for functional programming (I'm not an FP fanatic, it's just a preference). When I started learning Scala, I found the written materials extremely focused on syntax rather than how to use Scala to solve a problem. 
 
-In my experience, syntax is something you can look up, and learning to design the solution at a higher level is much more important. Many tutorials though, focus on getting practice with syntax. There is a reason for this, though I think we can improve it. In an interpreted language like Python, you can write a program with many kinds of bugs in it, and the program will execute right up until it tries to run the buggy line. In a compiled language like C or Scala, if there's something wrong with your syntax the program won't compile and won't even run the first statement, so getting the syntax wrong has a higher penalty up front. This is frustrating at first, but once you get a bit more familiar with it, it actually helps you figure out the correct solution to the problem sometimes! Having a primer on syntax is valuable, but too many tutorials are 90% syntax. If we don't do something more interesting than saving a string to a variable and finding the length of it, we get bored and stop learning.
+In my experience, [syntax is something you can look up](http://docs.scala-lang.org/cheatsheets/), and learning to design the solution at a higher level is much more important. Many tutorials though, focus on getting practice with syntax. There is a reason for this, though I think we can improve it. In an interpreted language like Python, you can write a program with many kinds of bugs in it, and the program will execute right up until it tries to run the buggy line. In a compiled language like C or Scala, if there's something wrong with your syntax the program won't compile and won't even run the first statement, so getting the syntax wrong has a higher penalty up front. This is frustrating at first, but once you get a bit more familiar with it, it actually helps you figure out the correct solution to the problem sometimes! Having a primer on syntax is valuable, but too many tutorials are 90% syntax. If we don't do something more interesting than saving a string to a variable and finding the length of it, we get bored and stop learning.
 
 The goal of this tutorial is to get the reader as quickly as possible to actually solve an interesting problem, and have a complete app that they can deploy and show off that they have actually used some of the tools that are gaining a lot of attention in industry right now.
 
-This tutorial assumes that you have at least basic experience programming in some language. Pretty much any one will do: Python, C, Java, R, Ruby, etc. It will touch on some advanced topics, including distributed systems, but does not require previous knowledge or experience with those topics. Working through the tutorial should take between _ and _ hours of work (estimate, based on the wonderful folks who have helped test and refine it, and learned Scala in the process).
+This tutorial assumes that you have at least basic experience programming in some language. Pretty much any one will do: Python, C, Java, R, Ruby, etc. It will touch on some advanced topics, including distributed systems, but does not require previous knowledge or experience with those topics. Working through the tutorial should take between _?_ and _?_ hours of work (estimate, based on the wonderful folks who have helped test and refine it, and learned Scala in the process).
+
+The next few sections are background on the different types of compoenents you'll add or build. If you want to get right to doing things, skip down to [Time to actually do something!](#time-to-actually-do-something!).
 
 ## Data Source
 
@@ -146,9 +148,107 @@ The response data from NewsAPI is in a format called JSON. If you've done web pr
 
 Scala models objects differently, which means we have to do a small amount of processing to transform it into a more useable format. [There are a _lot_ of different ways to accomplish this](https://manuel.bernhardt.io/2015/11/06/a-quick-tour-of-json-libraries-in-scala/). For the tutorial, we'll use [sphere-json](https://github.com/sphereio/sphere-scala-libs/tree/master/json).
 
-In Scala projects, you have to tell the compiler where to go and find libraries and which version to grab. In Databricks, click on the "Workspace" icon on the sidebar. At the top of the first column, click the down arrow next to the "Workspace" column header, then select "Create"->"Library". In the pulldown menu for Source, select "Maven Coordinate". In the Coordinate field, enter "io.sphere:sphere-json_2.11:0.8.2". Expand the Advanced Options, and in the Repository field, enter "https://dl.bintray.com/commercetools/maven/", then click Create Library. This will go to the Commercetools repository and find version 0.8.2 of the sphere-json library from sphere.io, download it, and make it available to your notebook.
+In Scala projects, you have to tell the compiler where to go and find libraries and which version to grab. In Databricks, click on the "Workspace" icon on the sidebar. At the top of the first column, click the down arrow next to the "Workspace" column header, then select "Create"->"Library". In the pulldown menu for Source, select "Maven Coordinate". In the Coordinate field, enter "io.sphere:sphere-json_2.11:0.8.2". Expand the Advanced Options, and in the Repository field, enter "https://dl.bintray.com/commercetools/maven/", then click Create Library. This will go to the Commercetools repository and find version 0.8.2 of the sphere-json library from sphere.io, download it, and make it available to your notebook. [Note: if you have Scala, sbt, and Spark installed and want to build this app locally instead of on Databricks, see [the build file](build.sbt) for the code example in this repo--this requires setup and understanding of the build environment not covered here, but there are resources on the web for how to set all of this up so go for it if you prefer!]
 
-[make case classes for the data, and a function that takes a JSON packet and returns a typed instance]
+We can take a look at that unreadable mess of a response that we got earlier, and actually figure out what the pieces are. It's in the JSON format, which means that objects are defined by curly braces ( `{...}` ), and lists are defined by square brackets ( `[...]` ). Inside the outermost object, each field has a name. By looking at the field names and whether something is an object or a list, we can make an object in Scala that is the same "shape" as the object in JSON, by making a `class` for each object and a `Seq` for each list. Take the result from the earlier run and copy it into a text editor. Add newlines around the curly and square braces so that it's not just one line. Then, for each field name (text fields before any `:`) replace the data from that field with `...`. This will leave behind only the structure of the object, like this:
+
+```json
+{
+  "status": "...",
+  "source":"...",
+  "sortBy":"...",
+  "articles": [
+    {
+      "author":"...",
+      "title":"...",
+      "description":"...",
+      "url":"...",
+      "urlToImage":"...",
+      "publishedAt":"..."
+    },
+    {
+      "author":"...",
+      "title":"...",
+      "description":"...",
+      "url":"...",
+      "urlToImage":"...",
+      "publishedAt":"..."
+    }
+  ]
+}
+```
+
+In the outermost object, there are four fields, "status", "source", "sortBy", and "articles". The first three contain strings, and "articles" contains a list of objects. Each of those objects contains the same six fields: "author", "title", "description", "url", "urlToImage", and "publishedAt". Now we can build Scala classes that match this structure. First, let's build the inner object. We can choose whatever name we want for the class, such as `Article`. Make an object to contain the schemas, and put a case class inside of it for the article structure:
+
+```scala
+object Schemas {
+  case class Article(
+    author: String,
+    title: String,
+    description: String,
+    url: String,
+    urlToImage: String,
+    publishedAt: String
+  )
+}
+```
+
+Then add another case class after this (inside the same object) for the outer object, once again naming it whatever you want, such as `NewsApiResposne`:
+
+```scala
+object Schemas {
+  ...
+  
+  case class NewsApiResponse (
+    status: String,
+    source: String,
+    sortBy: String,
+    articles: Seq[Article]
+  )
+}
+```
+
+Now, we need the functions that turn a string with a packet of JSON inside into a NewsApiResponse. Create another object inside of the Schemas object (call it whatever you wish--I typically use `Ops`) to hold these functions. Inside Ops, first we will create the implicit formatters for each of our schema case classes. An implicit is something that the compiler can find to pass to a function, where the programmer does not have to explicitly tell it which object to use--the compiler uses the type system to guess which object is the correct one. A formatter is a helper data type that tells how to translate between two types (in this case, between our case class and a JSON string). We'll use the `jsonProduct` function from sphere-json to create these helpers automatically.
+
+```scala
+object Schemas {
+  ...
+
+  object Ops {
+    import io.sphere.json.generic._
+    import io.sphere.json._
+
+    implicit val jsonArticle: JSON[Article] = jsonProduct(Article.apply _)
+    implicit val jsonNewsApiResponse: JSON[NewsApiResponse] = jsonProduct(NewsApiResponse.apply _)
+  }
+}
+```
+
+We can create one more helper that we'll use for translation. To do the full translation from JSON string to NewsApiResponse, we have do several things:
+
+1. Use the `fromJSON[T]` function from sphere-json, where T is our data type (NewsApiResponse)
+1. Take the output of that function, which is a `JValidation`--a custom type that we don't want to work with directly and turn it into an `Option` (e.g.: a Some or a None)
+1. If it is a Some (containing our actual result), get the result out of it, or if it is a None then create an empty result object
+
+This is messy to do in the top level of our application, so add a function to do those things to Ops as well:
+
+```scala
+object Schemas {
+  ...
+
+  object Ops {
+    ...
+    
+    def deserialize(json: String): NewsApiResponse =
+      fromJSON[NewsApiResponse](json)
+        .toOption.getOrElse(
+          NewsApiResponse( "Deserialization failure", "", "", Nil )
+        )
+  }
+}
+```
+
+Now we can call `Schemas.Ops.deserialize("<json_string>")` and get back a NewsApiResponse.
 
 ## Filter incoming data
 
@@ -181,6 +281,22 @@ Now that the settings are stored in the database, they can be changed by updatin
 [probably start with live update field in the notebook]
 [webapp? combined with the one that changes the db settings?]
 
+## Done!
+
+That's it for this tutorial! Congrats! 
+
+So, what next? In the future, we'll add more tutorials to this repo, and add links to them. 
+
+In the meantime, here are some ideas for things you could work on:
+
+- __Make the app streaming__ - There is a streaming example in the example source code in this repository, which you can use to build a similar app that does real-time updates, going back to the data source and grabbing updates. The example code uses NewsAPI, which doesn't update often enough to make an exciting streaming app, but you could try modifying it to get data from some other source that updates more frequently, like Twitter. 
+- __Add AI__ - You could use Spark's machine learning library to add more complex analysis to the app.
+- __Make a dashboard__ - If you've done any web development, try creating a dashboard to display the results of the app.
+
+Finally, if you build something cool and want to create a tutorial on how to do it, make a pull request that adds a link to your tutorial to the readme of this repo, so other students can find it. Also, if there's something wrong or unclear about this tutorial, or anything that can be improved, feel free to make a pull request for your suggested changes, and we'll work with you on the improvement. 
+
+Thanks!
+
 # Notes
 
-Some snippets of code borrowed from [the Databricks docs](https://docs.databricks.com/) including use of the Apache DefaultHttpClient and functions for writing to Hive.
+Some snippets of code borrowed from [the Databricks docs](https://docs.databricks.com/) including use of the Apache DefaultHttpClient and functions for writing to Hive. Thanks to [NewsAPI](https://newsapi.org/) as well for powering this tutorial for free!
