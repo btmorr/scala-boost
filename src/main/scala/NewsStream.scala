@@ -5,7 +5,7 @@ package com.github.btmorr.tutorial
 object NewsStream extends App {
   import step0.ApiOps._
   import step0.SparkInit
-  import step1.Schemas
+  import step1.Schemas.Ops._
 
   // Before running this app, the NEWSAPI_KEY environment variable must be
   val newsApiKey = sys.env.getOrElse( "NEWSAPI_KEY", throw new Exception( "NEWSAPI_KEY environment variable must be set before running this application" ) )
@@ -23,13 +23,13 @@ object NewsStream extends App {
   val articleStream = for {
     uri <- uriStream
     respString = makeNewsApiRequest( uri )
-    respObj = Schemas.Ops.deserialize(respString)
+    respObj = deserialize(respString)
     article <- respObj.articles
   } yield article
 
   // todo: replace this print with an updateIfNotExists to a database
   articleStream.foreachRDD( rdd => {
-    rdd collect() foreach Schemas.prettyPrintArticle
+    rdd collect() foreach prettyPrintArticle
   })
 
   ssc.start()

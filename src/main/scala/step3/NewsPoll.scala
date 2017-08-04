@@ -1,7 +1,7 @@
 package com.github.btmorr.tutorial
-package step2
+package step3
 
-// Add at least one filter function
+// Store results to a database
 object NewsPoll extends App {
   import step0.SparkInit
   import step0.ApiOps._
@@ -29,18 +29,9 @@ object NewsPoll extends App {
   import session.implicits._
 
   articlesDF.printSchema()
-  val filteredArticlesDF = articlesDF.select("title", "description")
+  articlesDF.select("title", "description")
     .filter( $"title".contains( "health" ) )
-
-  println("\nBefore persistence:")
-  filteredArticlesDF.show()
-
-  filteredArticlesDF.write.saveAsTable( "filtered_articles" )
-
-  val reloadDF = sqlContext.read.table( "filtered_articles" )
-
-  println("\nAfter persistence:")
-  reloadDF.write.saveAsTable( "filtered_articles" )
+    .show()
 
   sc.stop()
 }

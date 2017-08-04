@@ -7,7 +7,7 @@ object NewsPoll extends App {
   import step0.ApiOps._
   import step1.Schemas.Ops._
 
-  // Before running this app, the NEWSAPI_KEY environment variable must be
+  // Before running this app, the NEWSAPI_KEY environment variable must be set
   val newsApiKey = sys.env.getOrElse( "NEWSAPI_KEY", throw new Exception( "NEWSAPI_KEY environment variable must be set before running this application" ) )
 
   val sc = SparkInit.sparkContext

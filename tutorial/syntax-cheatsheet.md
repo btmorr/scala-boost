@@ -144,6 +144,38 @@ val thisBrowser: Option[Browser] = getUserInput() // not defined, assume it is a
 println(s"Is the browser supported? ${validBrowsers.contains(thisBrowser.getOrElse(InvalidBrowser))}")
 ```
 
+## Functions
+
+There are two ways to write functions, which are mostly equivalent. A function that takes a string and returns true or false could look like either of these:
+
+```scala
+def isAlphaNumeric( str: String ): Boolean
+val isAlphaNumeric: (String => Boolean)
+```
+
+There are technical differences between the two, but for simple applications they will generally work the same. Both can be implemented by the same code, and they are used in the same way at the call site:
+
+```scala
+def isAlphaNumericDef( str: String ): Boolean = {
+ val alphaNumerics: Set[Char] = "abcdefghijklmnopqrstuvwxyz1234567890".toSet
+ str.foreach( letter => alphaNumerics.contains(letter.toLower) )
+}
+
+val isAlphaNumericVal: (String => Boolean) = str => {
+  val alphaNumerics: Set[Char] = "abcdefghijklmnopqrstuvwxyz1234567890".toSet
+  str.foreach( letter => alphaNumerics.contains(letter.toLower) )
+}
+
+val test1 = isAlphaNumericDef( "this" )
+// test1: Boolean = true
+val test2 = isAlphaNumericDef( "!!!" )
+// test2: Boolean = false
+val test3 = isAlphaNumericVal( "this" )
+// test1: Boolean = true
+val test4 = isAlphaNumericVal( "!!!" )
+// test2: Boolean = false
+```
+
 ## Additional links
 
 Especially because this is a new tutorial, there's plenty missing. Here are some links to point you in the right direction for additional help (feel free to add more if you):

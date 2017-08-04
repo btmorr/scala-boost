@@ -255,16 +255,30 @@ Now we can call `Schemas.Ops.deserialize("<json_string>")` and get back a NewsAp
 
 ## Filter incoming data
 
-[process the rdd into a dataframe]
-[add filter functions]
-[add a way to configure which filters get applied using flags]
+If you've had any difficulty with prior steps, code is available in [the step1 package](../src/main/scala/step1/NewsPoll.scala) to get you started on this step. Starting with this section, we're going to provide less (or no) snippets of code. There is still example source in this repository, but we'll provide links to documentation and articles. Try to use those to figure out what you need to do, before checking the example.
+
+Once we have the data in our custom objects, we could work on them directly using `map`, `filter`, and similar functions to modify and analyze the data. With a small dataset like the one we're currently working on, this works very well, but with much larger datasets that are common in professional Scala and Spark work, analysis and database operations get much faster and easier using a DataFrame instead of a plain RDD. DataFrames are closely related to relational databases, and will be especially familiar for anyone who has worked with `data.frame` in R or `pandas.DataFrame` in Python. 
+
+Take a look at [the Spark SQL documentation](https://spark.apache.org/docs/2.1.1/sql-programming-guide.html) for instructions on converting an RDD to a DataFrame, and use this to get a DataFrame with the Articles from the request. In Databricks, the process will be a bit different from what's in the Spark documentation. The important thing to know is that the Spark docs show you how to get a SparkSession and SparkContext, etc. In a Databricks Scala notebooks, the following predefined objects are available:
+
+1. `sc` - a SparkContext
+1. `session` - a SparkSession
+1. `sqlContext` - an SQLContext
+
+Using these objects, the rest of the instructions in the Spark docs work as expected.
+
+Now that you have the articles in a DataFrame, you can use functions on the result such as `select` (corresponding to the SQL `SELECT` command), `filter` (corresponding to SQL `WHERE`), etc. Filter functions have some obvious use-cases in a news application, such as showing only articles related to a specific topic. In order to practice this, run the application as it currently stands, and pick out one or more keywords that occur in some (but not all) of the articles. Then write a function that will only show you the articles related to these keywords. Think about which fields might contain the keywords you care about. Do you want to check the description only, the title only, or both? Do you want to limit the time frame? No matter what, the functions you use with `filter` have to take the input type (a DataFrame row) and return a Boolean, where "true" means "keep this record" and "false" means "discard this record".
+
+Also, you could definitely choose whether to perform this filtering on the RDD of Article objects (using `flatMap`), or on the DataFrame, using `select`, `filter`, etc. Using DataFrame will probably run faster, but using the RDD of Articles allows you to write functions that are more like plain Scala, which is nice if the extra performance is not critical. If you choose to use the RDD with `flatMap` instead of the DataFrame, you'll probably write functions that take an Article and return an `Option[Article]`, where a `Some` contains an article to keep and a `None` means the article was discarded.
+
+Once you've written your filter function(s) and added them to the app, you should be able to run it and only see the articles that match your filter criteria. Yay! (Remember that a later run of the same app will get different articles from NewsAPI and might yeild no results at that time) Now, you may have already made the filter criteria separate variables that can be modified, but often while developing new functions things like the list of keywords will be initially hard-coded. If you haven't done it already, modify the filter function to take the criteria as an argument. This will get the app ready for the final feature: database storage.
 
 ## Use a database to store state
 
-As before, if you're stuck, there is code available in [the step1 package](../src/main/scala/step1/NewsPoll.scala) to help you get un-stuck. Now, the cluster created earlier will already have a Hive database available on it. You don't have to do anything special to connect to it. Just add the following command to your application:
+As before, if you're stuck, there is code available in [the step2 package](../src/main/scala/step2/NewsPoll.scala) to help you get un-stuck. Now, if you're using Databricks the cluster created earlier will already have a Hive database available on it. You don't have to do anything special to connect to it ([see this documentation from Databricks](https://docs.databricks.com/user-guide/tables.html#create-tables-programmatically)). Just add the following command to your application:
 
-```
-dataFrame.write.saveAsTable("newsRecords")
+```scala
+dataFrame.write.saveAsTable("newsRecords") // replace `dataFrame` with your variable name
 ```
 
 There's a snag though: Hive is an immutable data store, which means that records cannot be re-written or updated. We can only write new records. This also makes sense for our application, because when we make a request to NewsAPI for more news, we will probably get copies of things we've already seen before. We don't need or want to process them again, so we'll have to do some checking early in the pipeline to discard records we've already processed (e.g.: ones that are already in Hive).
@@ -281,8 +295,7 @@ Now that the settings are stored in the database, they can be changed by updatin
 
 ## How to display the output?
 
-[probably start with live update field in the notebook]
-[webapp? combined with the one that changes the db settings?]
+[start with live update field in the notebook]
 
 ## Done!
 
@@ -293,7 +306,7 @@ So, what next? In the future, we'll add more tutorials to this repo, and add lin
 In the meantime, here are some ideas for things you could work on:
 
 - __Make the app streaming__ - There is a streaming example in the example source code in this repository, which you can use to build a similar app that does real-time updates, going back to the data source and grabbing updates. The example code uses NewsAPI, which doesn't update often enough to make an exciting streaming app, but you could try modifying it to get data from some other source that updates more frequently, like Twitter. 
-- __Add AI__ - You could use Spark's machine learning library to add more complex analysis to the app.
+- __Add AI__ - You could use [Spark's machine learning library](http://mvnrepository.com/artifact/org.apache.spark/spark-mllib_2.11/2.1.1) to add more complex analysis to the app.
 - __Make a dashboard__ - If you've done any web development, try creating a dashboard to display the results of the app.
 
 Finally, if you build something cool and want to create a tutorial on how to do it, make a pull request that adds a link to your tutorial to the readme of this repo, so other students can find it. Also, if there's something wrong or unclear about this tutorial, or anything that can be improved, feel free to make a pull request for your suggested changes, and we'll work with you on the improvement. 
