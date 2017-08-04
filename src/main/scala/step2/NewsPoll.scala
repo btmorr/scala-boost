@@ -29,18 +29,11 @@ object NewsPoll extends App {
   import session.implicits._
 
   articlesDF.printSchema()
-  val filteredArticlesDF = articlesDF.select("title", "description")
+  articlesDF.select("title", "description")
     .filter( $"title".contains( "health" ) )
+    .show()
 
-  println("\nBefore persistence:")
-  filteredArticlesDF.show()
-
-  filteredArticlesDF.write.saveAsTable( "filtered_articles" )
-
-  val reloadDF = sqlContext.read.table( "filtered_articles" )
-
-  println("\nAfter persistence:")
-  reloadDF.write.saveAsTable( "filtered_articles" )
+  articlesDF.printSchema()
 
   sc.stop()
 }
