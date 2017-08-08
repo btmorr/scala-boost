@@ -1,11 +1,9 @@
-package com.github.btmorr.tutorial
-package step1
+package com.github.btmorr
+package tutorials.spark.step0
 
-// Add deserialization classes, print the articles in a more readable format
+// Create a SparkContext, make a request to NewsAPI, print the raw result
 object NewsPoll extends App {
-  import step0.SparkInit
-  import step0.ApiOps._
-  import step1.Schemas.Ops._
+  import ApiOps._
 
   // Before running this app, the NEWSAPI_KEY environment variable must be set
   val newsApiKey = sys.env.getOrElse( "NEWSAPI_KEY", throw new Exception( "NEWSAPI_KEY environment variable must be set before running this application" ) )
@@ -17,12 +15,8 @@ object NewsPoll extends App {
 
   val rdd = sc.parallelize( Seq( requestString ) )
   val contentsRDD = rdd.map( makeNewsApiRequest )
-  val articlesRDD = contentsRDD
-    .map( deserialize )
-    .flatMap( _.articles )
-  val articles = articlesRDD.collect
 
-  articles foreach prettyPrintArticle
+  contentsRDD.collect foreach println
 
   sc.stop()
 }

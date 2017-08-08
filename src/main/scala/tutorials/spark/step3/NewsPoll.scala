@@ -1,13 +1,13 @@
-package com.github.btmorr.tutorial
-package step3
+package com.github.btmorr
+package tutorials.spark.step3
 
 import org.apache.spark.sql.DataFrame
 
 // Store results to a database
 object NewsPoll extends App {
-  import step0.SparkInit
-  import step0.ApiOps._
-  import step1.Schemas.Ops._
+  import tutorials.spark.step0.ApiOps._
+  import tutorials.spark.step0.SparkInit
+  import tutorials.spark.step1.Schemas.Ops._
 
   case class FlagRecord(key: String, value: String)
 
@@ -52,7 +52,10 @@ object NewsPoll extends App {
           Seq( FlagRecord( "filterString", "health" ) )
         ).toDF
       println("Writing to table")
-      filterCriteriaDF.write.saveAsTable( flagTableName )
+      filterCriteriaDF
+        .write
+        .mode(org.apache.spark.sql.SaveMode.Overwrite)
+        .saveAsTable( flagTableName )
       println("Done writing to table")
       filterCriteriaDF
   }
@@ -77,7 +80,12 @@ object NewsPoll extends App {
 
   // todo: still need to read the article table first and drop duplicates
   val articleTableName = "filtered_articles"
-  filteredArticlesDF.write.insertInto( articleTableName )
+
+  val priorArticlesDF = sqlContext.read.table( articleTableName )
+
+  filteredArticlesDF
+    .write
+    .insertInto( articleTableName )
 
   val reloadDF = sqlContext.read.table( articleTableName )
 

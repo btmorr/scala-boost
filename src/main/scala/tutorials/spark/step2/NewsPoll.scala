@@ -1,11 +1,11 @@
-package com.github.btmorr.tutorial
-package step2
+package com.github.btmorr
+package tutorials.spark.step2
 
 // Add at least one filter function
 object NewsPoll extends App {
-  import step0.SparkInit
-  import step0.ApiOps._
-  import step1.Schemas.Ops._
+  import tutorials.spark.step0.ApiOps._
+  import tutorials.spark.step0.SparkInit
+  import tutorials.spark.step1.Schemas.Ops._
 
   // Before running this app, the NEWSAPI_KEY environment variable must be set
   val newsApiKey = sys.env.getOrElse( "NEWSAPI_KEY", throw new Exception( "NEWSAPI_KEY environment variable must be set before running this application" ) )

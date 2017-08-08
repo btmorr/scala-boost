@@ -1,5 +1,5 @@
-package com.github.btmorr.tutorial
-package step1
+package com.github.btmorr
+package tutorials.spark.step1
 
 /* Common functionality used in both NewsPoll and NewsStream defined here
  */
@@ -21,8 +21,8 @@ object Schemas {
   )
 
   object Ops {
-    import io.sphere.json.generic._
     import io.sphere.json._
+    import io.sphere.json.generic._
 
     implicit val jsonArticle: JSON[Article] = jsonProduct(Article.apply _)
     implicit val jsonNewsApiResponse: JSON[NewsApiResponse] = jsonProduct(NewsApiResponse.apply _)

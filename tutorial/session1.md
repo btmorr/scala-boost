@@ -1,4 +1,4 @@
-# Do something interesting with Scala!
+# Do something interesting with Scala! Part Deux!
 
 [under construction]
 

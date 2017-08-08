@@ -1,11 +1,12 @@
-package com.github.btmorr.tutorial
+package com.github.btmorr
+package tutorials.spark.stream
 
 /* This version of the app makes repeated requests to the API on a timer and processes the result as a stream.
  */
 object NewsStream extends App {
-  import step0.ApiOps._
-  import step0.SparkInit
-  import step1.Schemas.Ops._
+  import tutorials.spark.step0.ApiOps._
+  import tutorials.spark.step0.SparkInit
+  import tutorials.spark.step1.Schemas.Ops._
 
   // Before running this app, the NEWSAPI_KEY environment variable must be
   val newsApiKey = sys.env.getOrElse( "NEWSAPI_KEY", throw new Exception( "NEWSAPI_KEY environment variable must be set before running this application" ) )
