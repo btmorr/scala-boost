@@ -12,6 +12,10 @@ This tutorial assumes that you have at least basic experience programming in som
 
 ## Let's get started
 
+### Intall Scala and sbt
+
+If you have already installed the Java JDK (preferably version 8), Scala, and sbt, skip down to [Set up a new project](#set-up-a-new-project). If not, follow the instructions on [Scala's install page](https://www.scala-lang.org/documentation/getting-started-sbt-track/getting-started-with-scala-and-sbt-in-the-command-line.html)
+
 ### Set up a new project
 
 This repo provides the basic build structure already so that you don't have to manually set up the build tools used to compile Scala and run it. The important files and folders looks like this:
