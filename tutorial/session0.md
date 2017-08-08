@@ -77,7 +77,7 @@ They are not included in the data itself, but you can see that each line follows
 
 ## Formatting the data
 
-TSV-formatted data is good for storing on disk, but this is not very easy to work with directly. "case classes" are data structures in Scala that are useful for structuring this kind of object. In a relational database (one with defined columns where each row has the same number of items in the same order, and each item has a set type), each row corresponds well to an instance of a class. Create a case class named Article, with a field for each column in the table.
+TSV-formatted data is good for storing on disk, but this is not very easy to work with directly. "case classes" are data structures in Scala that are useful for structuring this kind of object. In a relational database (one with defined columns where each row has the same number of items in the same order, and each item has a set type), each row corresponds well to an instance of a class. Create a new file in the source directory named "Article.scala", and add the package statement and a case class named Article, with a field for each column in the table.
 
 Now, create a function that takes a string as input. If the string fits the pattern of the columns in our data table, the function should return an instance of the class. If not, it should fail (take a look at [this blog](http://danielwestheide.com/blog/2012/12/19/the-neophytes-guide-to-scala-part-5-the-option-type.html) for an introduction to the Option type, which makes this success-or-failure checking work well). The function should have the following signature:
 
@@ -91,18 +91,46 @@ You can choose your own name for the function and/or the input parameter, adjust
 println( deserialize( "0\tTitle\tAuthor\tPublishedAt\tDescription\tURL" ).get )
 ```
 
-If the funtion worked correclty, it will print `0    Title    Author    PublishedAt    Description    URL`. If not, it will throw an exception. Once we have a function like this, we can use it to change each line of data from a string to an Article. There are several functions that can do this. The most common ones are `map` and `flatMap`, each of which takes a function as its argument. The function has to have the same input type as the objects in the sequence, but the output type could be anything. Try using both of them to see how they behave (more background info [on this syntax tutorial from Twitter](https://twitter.github.io/scala_school/collections.html) under the "Functional Combinators" header if you get stuck or just want a more complete explanation of their behavior and other similar options).
+If the funtion worked correclty, it will print `0    Title    Author    PublishedAt    Description    URL`. If not, it will throw an exception. Once we have a function like this, we can use it to change each line of data from a string to an Article. There are several functions that can do this. The most common ones are `map` and `flatMap`, each of which takes a function as its argument. The function has to have the same input type as the objects in the sequence, but the output type could be anything. Try using both of them to see how they behave (more background info [on this syntax tutorial from Twitter](https://twitter.github.io/scala_school/collections.html) under the "Functional Combinators" header if you get stuck or just want a more complete explanation of their behavior and other similar options). 
 
 ## Using the formatted data
 
-Now that we have have a `Seq[Article]`, we can do other types of analysis and filtering.
+Use the functions from the last section to get a `Seq[Article]` with the data from the TSV file. Now, we can do other types of analysis and filtering, also using `map` and/or `flatMap`, and a similar function named `filter`.
 
+[examples of use of map, flatMap, and filter to do basic analysis]
 
+## Saving and sharing data
 
+Applications do a lot of processing in memory, but most eventually need to save, shared, and read data from some kind of storage. In modern applications, this is generally done with a database. There are many different kinds of database, each of which provides different pros and cons for saving and searching different kinds of data. The most common traditional kind is called a relational database (or RDBMS), and under the hood it works very similarly to the TSV file on disk that we read from earlier.
+
+We have already created a bit of the functionality needed to build a database to save `Article`s. Now, let's add a few more functions to implement a very basic relational database from scratch. Copy this skeleton into a new file named "Database.scala" in the source directory:
+
+```scala
+package demo
+
+case class Database(name: String) {
+  // If a database by this name exists, open it, else create an empty db with this name
+  ???
+  
+  case class Table(name: String) {
+    // If a table by this name exists, open it, else create an empty table with this name
+    ???
+    
+    def insert(article: Article): Boolean = ???
+    def update(article: Article): Boolean = ???
+    def delete(article: Article): Boolean = ???
+    def get(uuid: Int): Option[Article] = ???
+  }
+}
+```
+
+Everywhere that there are `???`, some kind of implementation is needed to make the database work correctly.
+
+[Explain each function, and walk through implementing and testing them]
 
 ## Notes
 
-If you're curious, I used this snippet to create data that was used for this tutorial, using articles from [NewsAPI](https://newsapi.org/):
+If you're curious, I used this snippet to create data that was used for this tutorial, using articles from [NewsAPI](https://newsapi.org/), which is similar to an implementation of `demo.Database.Table.insert`:
 
 ```scala
   var nextUUID = 0
@@ -113,3 +141,8 @@ If you're curious, I used this snippet to create data that was used for this tut
     result
   }
 ```
+
+Further Reading:
+
+- For an extremely detailed discussion of database implementations and challenges, check out ["Designing Data Intensive Applications](http://shop.oreilly.com/product/0636920032175.do), especially Chapter 3
+
