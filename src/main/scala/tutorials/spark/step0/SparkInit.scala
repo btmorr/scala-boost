@@ -1,9 +1,9 @@
-package com.github.btmorr.tutorial
-package step0
+package com.github.btmorr
+package tutorials.spark.step0
 
+import org.apache.spark.sql.SparkSession
 import org.apache.spark.streaming._
 import org.apache.spark.{SparkConf, SparkContext}
-import org.apache.spark.sql.SparkSession
 
 object SparkInit {
   private val appName = "news-stream"

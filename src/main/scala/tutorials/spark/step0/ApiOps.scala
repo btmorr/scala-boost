@@ -1,5 +1,5 @@
-package com.github.btmorr.tutorial
-package step0
+package com.github.btmorr
+package tutorials.spark.step0
 
 object ApiOps {
   def makeNewsApiRequest(url: String): String = {

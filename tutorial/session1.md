@@ -1,4 +1,4 @@
-# Do something interesting with Scala!
+# Do something interesting with Scala! Part Deux!
 
 [under construction]
 
@@ -278,12 +278,10 @@ Once you've written your filter function(s) and added them to the app, you shoul
 As before, if you're stuck, there is code available in [the step2 package](../src/main/scala/step2/NewsPoll.scala) to help you get un-stuck. Now, if you're using Databricks the cluster created earlier will already have a Hive database available on it. You don't have to do anything special to connect to it ([see this documentation from Databricks](https://docs.databricks.com/user-guide/tables.html#create-tables-programmatically)). Just add the following command to your application:
 
 ```scala
-dataFrame.write.saveAsTable("newsRecords") // replace `dataFrame` with your variable name
+dataFrame.write.saveAsTable("your_table_name_here") // replace `dataFrame` with your variable name
 ```
 
-There's a snag though: Hive is an immutable data store, which means that records cannot be re-written or updated. We can only write new records. This also makes sense for our application, because when we make a request to NewsAPI for more news, we will probably get copies of things we've already seen before. We don't need or want to process them again, so we'll have to do some checking early in the pipeline to discard records we've already processed (e.g.: ones that are already in Hive).
-
-[check db for records and drop matches]
+There's a snag though: Hive is an immutable data store, which means that records cannot be re-written or updated. We can only write new records. This also makes sense for our application, because when we make a request to NewsAPI for more news, we will probably get copies of things we've already seen before. We don't need or want to process them again, so we'll have to do some checking early in the pipeline to discard records we've already processed (e.g.: ones that are already in Hive). Before you save records to the table, load what is already stored in the table, and only add records that do not already exist (hint: check out `SQLContext.read`).
 
 There's another thing that databases are really valuable for: storing settings that are used to determine the behavior of our app. Settings, such as the name of our data source, could be hard-coded, but this means that in order to check Ars Technica instead of the BBC, we have to make a change to code and re-deploy the app, which is not the preferred way to do it (some sites used to have problems with this, where if for instance a blogger wanted to post an article, they had to have a programmer update the code of the website--much better to just write the new option to the database and have the app respond).
 

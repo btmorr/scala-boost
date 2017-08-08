@@ -1,4 +1,5 @@
-package com.github.btmorr.tutorial
+package com.github.btmorr
+package tutorials.spark.stream
 
 import org.apache.spark.storage.StorageLevel
 import org.apache.spark.streaming.receiver.Receiver
