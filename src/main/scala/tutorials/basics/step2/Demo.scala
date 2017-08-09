@@ -8,22 +8,7 @@ object Demo extends App {
 
   import step1.Article
 
-  val articleFromTSV: (String => Option[Article]) = input => {
-    val splitInput = input.stripLineEnd.split("\t")
-    splitInput match {
-      case split if split.length == 6 => Some(Article(
-        split(0),
-        split(1),
-        split(2),
-        split(3),
-        split(4),
-        split(5)
-      ))
-      case _ => None
-    }
-  }
-
-  val articles = rows map articleFromTSV
+  val articles = rows map Article.fromTSV
   println("\n===>Articles:")
   articles.flatten.foreach(println)
 

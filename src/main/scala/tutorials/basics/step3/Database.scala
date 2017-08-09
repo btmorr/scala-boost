@@ -12,20 +12,7 @@ object Demo extends App {
 }
 
 object Ops {
-  val articleFromTSV: (String => Option[Article]) = input => {
-    val splitInput = input.stripLineEnd.split("\t")
-    splitInput match {
-      case split if split.length == 6 => Some(Article(
-        split(0), // head,
-        split(1), // drop 1 head,
-        split(2), // drop 2 head,
-        split(3), // drop 3 head,
-        split(4), // drop 4 head,
-        split(5)  // drop 5 head
-      ))
-      case _ => None
-    }
-  }
+
 }
 case class Database(rootDir: String)(name: String) {
   private val fileExtension = "rec"
@@ -49,9 +36,9 @@ case class Database(rootDir: String)(name: String) {
      * Note: the current implementation will fail if any file in the directory has a non-numerical
      * filename, after removing the file extension.
      */
-    private var uuids: Seq[Int] = tableDir.toFile.listFiles.toSeq
+    private var uuids: Set[Int] = tableDir.toFile.listFiles.toSet
       .map( _.getName.split("[.]").head.toInt )
-    private var maxUUID = uuids.headOption.getOrElse(-1)
+    private var maxUUID = uuids.lastOption.getOrElse(-1)
 
     private def serialize(article: Article): String = ???
 
@@ -59,7 +46,15 @@ case class Database(rootDir: String)(name: String) {
 
     private def saveToFile(filename: String): Boolean = ???
 
-    def insert(article: Article): Boolean = ???
+    def insert(article: Article): Boolean =
+      if ( uuids contains article.uuid ) false
+      else {
+        val record = article.toDbRecord
+        // write file
+        // update uuids
+        // update maxUUID
+        true
+      }
 
     def update(article: Article): Boolean = ???
 
@@ -69,7 +64,7 @@ case class Database(rootDir: String)(name: String) {
       if ( uuids contains uuid ) {
         val targetFile = tableDir.resolve( s"$uuid.$fileExtension" ).toString
         val contents = Source.fromFile( targetFile )
-        Ops.articleFromTSV( s"$uuid\t$contents" )
+        Article.fromTSV( s"$uuid\t$contents" )
       } else None
 
   }
