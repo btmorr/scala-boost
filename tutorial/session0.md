@@ -73,7 +73,7 @@ This has the path, now we need to actually read the contents of the file. The `s
 Once you have the the data in a sequence, this is a great time to print it and see what it looks like. The column headers are:
 
 ```
-UniqueID    Title    Author    PublishedAt    Description    URL
+Title    Author    PublishedAt    Description    URL
 ```
 
 They are not included in the data itself, but you can see that each line follows this pattern.
@@ -93,10 +93,14 @@ def deserialize(input: String): Option[Article]
 You can choose your own name for the function and/or the input parameter, adjusting the signature accordingly. Once you've written the function, you can test it by adding this line:
 
 ```scala
-println( deserialize( "0\tTitle\tAuthor\tPublishedAt\tDescription\tURL" ).get )
+println( deserialize( "Title\tAuthor\tPublishedAt\tDescription\tURL" ).get )
 ```
 
-If the funtion worked correclty, it will print `0    Title    Author    PublishedAt    Description    URL`. If not, it will throw an exception. Once we have a function like this, we can use it to change each line of data from a string to an Article. There are several functions that can do this. The most common ones are `map` and `flatMap`, each of which takes a function as its argument. The function has to have the same input type as the objects in the sequence, but the output type could be anything. Try using both of them to see how they behave (more background info [on this syntax tutorial from Twitter](https://twitter.github.io/scala_school/collections.html) under the "Functional Combinators" header if you get stuck or just want a more complete explanation of their behavior and other similar options). 
+If the funtion worked correclty, it will print `Title    Author    PublishedAt    Description    URL`. If not, it will throw an exception. Once we have a function like this, we can use it to change each line of data from a string to an Article. There are several functions that can do this. The most common ones are `map` and `flatMap`, each of which takes a function as its argument. The function has to have the same input type as the objects in the sequence, but the output type could be anything. Try using both of them to see how they behave (more background info [on this syntax tutorial from Twitter](https://twitter.github.io/scala_school/collections.html) under the "Functional Combinators" header if you get stuck or just want a more complete explanation of their behavior and other similar options). 
+
+Before we move on, if we have a `deserialize` function, it makes sense to have a `serialize` function that does the opposite.
+
+[write `serialize`]
 
 [step1]
 
@@ -128,8 +132,6 @@ case class Database(name: String) {
     private def deserialize(string: String): Option[Article] = ???
     
     def insert(article: Article): Boolean = ???
-    def update(article: Article): Boolean = ???
-    def delete(article: Article): Boolean = ???
     def get(uuid: Int): Option[Article] = ???
   }
 }
@@ -148,7 +150,36 @@ Some of these functions will need to interact with the file system. The function
 
 [make a version of the app that no longer reads from the TSV, and uses the db instead]
 
+[Make a REPL for the db, with the commands USEDB, USETABLE, GET, and INSERT]
+
 [step4]
+
+### Database extra credit
+
+The database we've created so far is an immutable database, with no built-in ability to change or delete records. This is actually all that is needed for some ways of designing applications, so it is a complete MVP product. Most databases also support commands to update existing records, delete records, delete tables or whole databases, and some kinds of search functionality. Each extra credit assignment is independent of the others, so you don't have to do all of them, and you can do them in any order.
+
+Extra credit assignment #1: Add `update` and `delete` commands to Table.
+
+```scala
+def update(uuid: Int)(article: Article): Boolean = ???
+def delete(uuid: Int): Boolean = ???
+```
+
+[Add `update` to Table and REPL]
+
+[Add `delete` to Table and REPL]
+
+Extra credit assignment #2: Add `droptable` and `dropdb` commands to Database.
+
+[Add DROPTABLE to Database and REPL]
+ 
+[Add DROPDB to Database and REPL]
+
+Extra credit assignment #3: Add one or more `find` commands to Table (your choice, exact match or "contains").
+
+[Add FIND _ = _ to Table and REPL]
+
+[step5]
 
 ## Notes
 
