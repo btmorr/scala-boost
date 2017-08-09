@@ -1,12 +1,10 @@
 package tutorials.basics
 package step1
 
-object DoSomething extends App {
+object Demo extends App {
   val home = sys.env.getOrElse("HOME", "~")
   val filename = s"$home/code/scala-boost/data/basics_data.tsv"
   val rows = scala.io.Source.fromFile(filename).mkString.split("\n")
-
-  import Schemas._
 
   val articleFromTSV: (String => Option[Article]) = input => {
     val splitInput = input.stripLineEnd.split("\t")

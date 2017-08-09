@@ -8,7 +8,7 @@ In my experience, [syntax is something you can look up](http://docs.scala-lang.o
 
 The goal of this tutorial is to get the reader as quickly as possible to actually solve an interesting problem, and have a complete app that they can deploy. This tutorial will aim to use only the tools that are available in Scala itself, without external dependencies.
 
-This tutorial assumes that you have at least basic experience programming in some language. Pretty much any one will do: Python, C, Java, R, Ruby, etc. It will touch on some advanced topics, including distributed systems, but does not require previous knowledge or experience with those topics. Working through the tutorial should take between _?_ and _?_ hours of work (estimate, based on the wonderful folks who have helped test and refine it, and learned Scala in the process). After the first few lines of starter code, instructions are provided on what to accomplish but little or no more code is given. Links will be provided to documentation, blog posts, etc where hints and solutions can be found, and if you get extremely stuck, this repo also contains [complete solutions to the tutorial](../src/main/scala/tutorials/basics) broken down into steps that roughly correspond to stages of the instructions, so you can look there if the links do not provide clear help.
+This tutorial assumes that you have at least basic experience programming in some language. Pretty much any one will do: Python, C, Java, R, Ruby, etc. It will touch on some advanced topics, including distributed systems, but does not require previous knowledge or experience with those topics. Working through the tutorial should take between \_?\_ and \_?\_ hours of work (estimate, based on the wonderful folks who have helped test and refine it, and learned Scala in the process). After the first few lines of starter code, instructions are provided on what to accomplish but little or no more code is given. Links will be provided to documentation, blog posts, etc where hints and solutions can be found, and if you get extremely stuck, this repo also contains [complete solutions to the tutorial](../src/main/scala/tutorials/basics) broken down into steps that roughly correspond to stages of the instructions, so you can look there if the links do not provide clear help.
 
 ## Let's get started
 
@@ -68,7 +68,7 @@ val home = sys.env.get("HOME")
 val dataFilePath = s"$home/scala-boost/data/basics_data.tsv"
 ```
 
-This has the path, now we need to actually read the contents of the file. The `scala.io.Source` package contains functions for reading from files. Check out [the documentation for io.Source](http://www.scala-lang.org/api/2.11.11/index.html#scala.io.Source$) for a function that will open a file (hint: you want the one that accepts a String as the argument). This funtion has a return type that you can click to find the function that you can use to actually read the lines. Following this call, you should have an `Iterator[String]`. An Iterator is like a list, except you can only go through the data once. We may want to use it a few times, so go ahead and convert it from an Iterator to a Seq.
+This has the path, now we need to actually read the contents of the file. The `scala.io.Source` package contains functions for reading from files. Check out [the documentation for io.Source](http://www.scala-lang.org/api/2.11.11/index.html#scala.io.Source$) for a simple function that will open a file (hint: you want the one that accepts a String as the argument). This funtion has a return type that you can click to find the function that you can use to actually read the lines. Following this call, you should have an `Iterator[String]`. An Iterator is like a list, except you can only go through the data once. We may want to use it a few times, so go ahead and convert it from an Iterator to a Seq.
 
 Once you have the the data in a sequence, this is a great time to print it and see what it looks like. The column headers are:
 
@@ -78,6 +78,7 @@ UniqueID    Title    Author    PublishedAt    Description    URL
 
 They are not included in the data itself, but you can see that each line follows this pattern.
 
+[step0]
 
 ## Formatting the data
 
@@ -97,11 +98,15 @@ println( deserialize( "0\tTitle\tAuthor\tPublishedAt\tDescription\tURL" ).get )
 
 If the funtion worked correclty, it will print `0    Title    Author    PublishedAt    Description    URL`. If not, it will throw an exception. Once we have a function like this, we can use it to change each line of data from a string to an Article. There are several functions that can do this. The most common ones are `map` and `flatMap`, each of which takes a function as its argument. The function has to have the same input type as the objects in the sequence, but the output type could be anything. Try using both of them to see how they behave (more background info [on this syntax tutorial from Twitter](https://twitter.github.io/scala_school/collections.html) under the "Functional Combinators" header if you get stuck or just want a more complete explanation of their behavior and other similar options). 
 
+[step1]
+
 ## Using the formatted data
 
 Use the functions from the last section to get a `Seq[Article]` with the data from the TSV file. Now, we can do other types of analysis and filtering, also using `map` and/or `flatMap`, and a similar function named `filter`.
 
 [examples of use of map, flatMap, and filter to do basic analysis]
+
+[step2]
 
 ## Saving and sharing data
 
@@ -119,6 +124,8 @@ case class Database(name: String) {
   case class Table(name: String) {
     // If a table by this name exists, open it, else create an empty table with this name
     ???
+    private def serialize(article: Article): String = ???
+    private def deserialize(string: String): Option[Article] = ???
     
     def insert(article: Article): Boolean = ???
     def update(article: Article): Boolean = ???
@@ -128,13 +135,24 @@ case class Database(name: String) {
 }
 ```
 
-Everywhere that there are `???`, some kind of implementation is needed to make the database work correctly.
+Everywhere that there are `???`, some kind of implementation is needed to make the database work correctly. [Hint: use the "serialize" and "deserialize" functions written earlier for writing and reading respectively]
+
+Some of these functions will need to interact with the file system. The function used earlier to read a file (from `scala.io.Source`) will work for actually reading the contents of a file, but for creating directories, listing folder contents, and checking if things already exists, you'll want to look at the functions in "NIO", especially `java.nio.file.Files` and `java.nio.file.Path`. `Files` provides functions such as `createDirectories` (most functions in `Files` return a `Path`). A `Path` can be converted to a `java.nio.file.File` using the `toFile` function, and the resulting `File` provides `listFiles` for the contents of a directory, `getName` for the filename, etc. Check out the [this tutorial on Path](http://tutorials.jenkov.com/java-nio/path.html) and [this one on Files](http://tutorials.jenkov.com/java-nio/files.html) for info and examples. There's also good info in [the NIO javadocs](https://docs.oracle.com/javase/7/docs/api/java/nio/file/Files.html).
+
 
 [Explain each function, and walk through implementing and testing them]
 
+[step3]
+
+### Use the database
+
+[make a version of the app that no longer reads from the TSV, and uses the db instead]
+
+[step4]
+
 ## Notes
 
-If you're curious, I used this snippet to create data that was used for this tutorial, using articles from [NewsAPI](https://newsapi.org/), which is similar to an implementation of `demo.Database.Table.insert`:
+If you're curious, I used this snippet to create data that was used for this tutorial, using articles from [NewsAPI](https://newsapi.org/), which is similar to an implementation of `serialze` used in `demo.Database.Table.insert`:
 
 ```scala
   var nextUUID = 0
