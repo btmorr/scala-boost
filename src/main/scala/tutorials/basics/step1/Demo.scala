@@ -7,5 +7,5 @@ object Demo extends App {
   val rows = scala.io.Source.fromFile(filename).mkString.split("\n")
 
 
-  rows map Article.fromTSV foreach println
+  rows map Article.fromDbRecord foreach println
 }

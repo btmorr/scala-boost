@@ -8,7 +8,7 @@ object Demo extends App {
 
   import step1.Article
 
-  val articles = rows map Article.fromTSV
+  val articles = rows map Article.fromDbRecord
   println("\n===>Articles:")
   articles.flatten.foreach(println)
 

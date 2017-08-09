@@ -1,19 +1,12 @@
 package tutorials.basics
 package step3
 
+import java.io.{File, PrintWriter}
 import java.nio.file._
 
+import scala.io.Source
 import step1.Article
 
-import scala.io.Source
-
-object Demo extends App {
-  Database(sys.env.get("HOME").get + "/dbroot")("testdb").createTable("testtable")
-}
-
-object Ops {
-
-}
 case class Database(rootDir: String)(name: String) {
   private val fileExtension = "rec"
 
@@ -40,31 +33,57 @@ case class Database(rootDir: String)(name: String) {
       .map( _.getName.split("[.]").head.toInt )
     private var maxUUID = uuids.lastOption.getOrElse(-1)
 
-    private def serialize(article: Article): String = ???
+    private def serialize(article: Article): String = article.toDbRecord
 
-    private def deserialize(string: String): Option[Article] = ???
+    private def deserialize(string: String): Option[Article] = Article.fromDbRecord( string )
 
-    private def saveToFile(filename: String): Boolean = ???
-
-    def insert(article: Article): Boolean =
-      if ( uuids contains article.uuid ) false
-      else {
-        val record = article.toDbRecord
-        // write file
-        // update uuids
-        // update maxUUID
+    private def saveToFile(filename: String)(contents: String): Boolean = {
+      try {
+        val writer = new PrintWriter( new File( filename ) )
+        writer.print(contents)
+        writer.close()
         true
+      } catch {
+        case e: Exception =>
+          println(s"Writing failed for record: $contents - Filename: $filename - Exception: $e")
+          false
       }
+    }
 
-    def update(article: Article): Boolean = ???
+    def insert(article: Article): Boolean = {
+      val record = article.toDbRecord
+      val fileName = s"${maxUUID + 1}.$fileExtension"
+      val successful: Boolean = saveToFile(fileName)(record)
+      if( successful ) {
+        maxUUID = maxUUID + 1
+        uuids = uuids + maxUUID
+      }
+      successful
+    }
 
-    def delete(article: Article): Boolean = ???
+    def update(uuid: Int)(article: Article): Boolean = {
+      if( uuids contains uuid ) {
+        ??? // overwrite file
+        true
+      } else {
+        false
+      }
+    }
+
+    def delete(uuid: Int): Boolean = {
+      if( uuids contains uuid ) {
+        ??? // delete file
+        true
+      } else {
+        false
+      }
+    }
 
     def get(uuid: Int): Option[Article] =
       if ( uuids contains uuid ) {
         val targetFile = tableDir.resolve( s"$uuid.$fileExtension" ).toString
-        val contents = Source.fromFile( targetFile )
-        Article.fromTSV( s"$uuid\t$contents" )
+        val contents = Source.fromFile( targetFile ).mkString
+        Article.fromDbRecord( contents )
       } else None
 
   }
