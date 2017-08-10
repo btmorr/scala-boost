@@ -280,9 +280,15 @@ The first thing this app needs is to know the path in the filesystem where the d
 
 Now, let's build the REPL (read-evaluate-print-loop). As the name suggests, the first thing a REPL does is read input from stdin (usually with a prompt). This is another task where `scala.io` comes in handy. Check out [the scaladocs](http://www.scala-lang.org/api/2.11.11/#scala.io.package). Once you get the input, you may have to clean it (remove end-lines, etc), and should figure out a way to split the command portion (the first word from the input) from the rest. No matter how you do it, you should end up with a Seq[String], where the first element (a.k.a. the `head`) is the command. You could choose to make your commands case-sensitive (including changing the case statements below accordingly if you want to force all-caps, for instance), or you could include a command to turn the command lowercase.
 
-The next step is "evaluate". In our case, this is just identifying which command has been entered, and selecting what to do based on this. The case statement already does this if the input is formatted correctly, but you're welcome to modify it if you want it to behave differently.
+The next step is "evaluate". In our case, this is just identifying which command has been entered, and selecting what to do based on this. The case statement already does the choosing if the input is formatted correctly, but you're welcome to modify it if you want it to behave differently. Now you just need to replace the `???` for each command with an implementation.
 
-[Make a REPL app for the db, with the commands USEDB, USETABLE, GET, and INSERT]
+`usedb` should "open" a database. The Database class already handles the details, so we just need to pass along the name that the user specifies, and keep track of which database has been "opened" most recently. You can get as simple or fancy as you like. The second item in the input array will be the word after "usedb". You can do more fancy stuff, like making sure that they only enter one word, check for invalid characters (ones that would break the file system, like "/"), etc. For a first version this isn't strictly necessary though.
+
+`usetable` should "open" a table inside the current database. This should require that a database already be "open" and fail otherwise (hopefully with a useful error message...). When this command is successful, the app should keep track of the most recently opened table.
+
+`insert` should turn the remainder of the input and attempt to turn it into an instance of Article. If this is unsuccessful, print an error message, otherwise use the insert method of the current table.
+
+`get` should turn the remainder of the input into an integer. If unsuccessful, print an error message, otherwise use the get method of the current table.
 
 _If you have had difficulty with the previous step and wish to see/use an example implementation thus far, check out [the step4 directory](../src/main/scala/tutorials/basics/step4) in this repo._
 
