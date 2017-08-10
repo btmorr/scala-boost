@@ -219,7 +219,64 @@ _If you have had difficulty with the previous step and wish to see/use an exampl
 
 ### Use the database
 
-Now it's time to make a User Interface. The first thing this app needs is to know the path in the filesystem where the database will be stored. You're welcome to make whatever design decision makes sense to you--you can add this as an additional parameter to the Database class, hard-code it to the current directory, or specify some set path based on an environment variable that is set on all operating systems, such as `HOME` (in the example implementation, I made this a parameter, and passed in `sys.env("HOME") + "/.newbiedb"` at the callsite).
+Now it's time to make a User Interface. Create a file named "Repl.scala", and paste this in:
+
+```scala
+object Repl extends App {
+  var exitFlag = false
+  val dbRootDir = ???
+
+  val databases: Map[String, Database] = Map.empty
+  var currentDb: Option[Database] = None
+  var currentTable: Option[Table] = None
+
+  println("Welcome to NewbieDB! Type 'help' for a list of commands, or 'exit' to quit (commands are not case-sensitive).")
+  while( !exitFlag ) {
+    print("> ")
+    val input: Seq[String] = ???
+
+    input.head match {
+      case "help" => println(
+        """
+          |Valid commands:
+          |  help            -  Display this screen
+          |  exit            -  Leave the application
+          |  usedb <name>    -  Create/open a database by name
+          |  usetable <name> -  Create/open a table within the current database by name
+          |  insert <record> -  Add a record to the database. Records must be in the format:
+          |                       Title;;Author;;PublishedAt;;Description;;URL
+          |                     If successful, this command will display the UUID of the record
+          |                     that has been written. Example:
+          |                       > insert title;;author;;date;;desc;;url
+          |                       123
+          |                       >
+          |  get <uuid>      -  Get a record from the database by UUID. To retrieve the record
+          |                     written in the example above:
+          |                       > get 123
+          |                       title;;author;;date;;desc;;url
+          |                       >
+          |
+        """.stripMargin)
+
+      case "usedb" => ???
+
+      case "usetable" => ???
+
+      case "insert" => ???
+
+      case "get" => ???
+
+      case "exit" => exitFlag = true
+
+      case other => println( s"Invalid input: $other" )
+    }
+  }
+}
+```
+
+I've included a couple of guiding details that are a lot of work and not much learning, so that you can get right to the more interesting stuff. Do take a look though, because the text and whatnot may provide hints about the commands you need to implement.
+
+The first thing this app needs is to know the path in the filesystem where the database will be stored. You're welcome to make whatever design decision makes sense to you--you can add this as an additional parameter to the Database class, hard-code it to the current directory, or specify some set path based on an environment variable that is set on all operating systems, such as `HOME` (in the example implementation, I made this a parameter, and passed in `sys.env("HOME") + "/.newbiedb"` at the callsite).
 
 [Make a REPL app for the db, with the commands USEDB, USETABLE, GET, and INSERT]
 
