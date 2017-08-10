@@ -274,9 +274,13 @@ object Repl extends App {
 }
 ```
 
-I've included a couple of guiding details that are a lot of work and not much learning, so that you can get right to the more interesting stuff. Do take a look though, because the text and whatnot may provide hints about the commands you need to implement.
+I've included a couple of guiding details that are a lot of work and not much learning, so that you can get right to the more interesting stuff. Do take a look though, because the text and whatnot may provide hints about the commands you need to implement. Note that there's plenty here you can modify, such as the character(s) used to separate fields in a record input. For the example, I picked ";;", because it won't occur accidentally in an article, whereas splitting on spaces, commas, etc could easily result in the string getting split up the wrong way and failing to write to the database.
 
 The first thing this app needs is to know the path in the filesystem where the database will be stored. You're welcome to make whatever design decision makes sense to you--you can add this as an additional parameter to the Database class, hard-code it to the current directory, or specify some set path based on an environment variable that is set on all operating systems, such as `HOME` (in the example implementation, I made this a parameter, and passed in `sys.env("HOME") + "/.newbiedb"` at the callsite).
+
+Now, let's build the REPL (read-evaluate-print-loop). As the name suggests, the first thing a REPL does is read input from stdin (usually with a prompt). This is another task where `scala.io` comes in handy. Check out [the scaladocs](http://www.scala-lang.org/api/2.11.11/#scala.io.package). Once you get the input, you may have to clean it (remove end-lines, etc), and should figure out a way to split the command portion (the first word from the input) from the rest. No matter how you do it, you should end up with a Seq[String], where the first element (a.k.a. the `head`) is the command. You could choose to make your commands case-sensitive (including changing the case statements below accordingly if you want to force all-caps, for instance), or you could include a command to turn the command lowercase.
+
+The next step is "evaluate". In our case, this is just identifying which command has been entered, and selecting what to do based on this. The case statement already does this if the input is formatted correctly, but you're welcome to modify it if you want it to behave differently.
 
 [Make a REPL app for the db, with the commands USEDB, USETABLE, GET, and INSERT]
 

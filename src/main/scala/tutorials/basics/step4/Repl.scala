@@ -17,9 +17,9 @@ object Repl extends App {
   println("Welcome to NewbieDB! Type 'help' for a list of commands, or 'exit' to quit (commands are not case-sensitive).")
   while( !exitFlag ) {
     print("> ")
-    val input = scala.io.StdIn.readLine.stripLineEnd.toLowerCase.split(" ")
+    val input = scala.io.StdIn.readLine.stripLineEnd.split(" ")
 
-    input.head match {
+    input.head.toLowerCase match {
       case "help" => println(
         """
           |Valid commands:
