@@ -303,9 +303,9 @@ def update(uuid: Int)(article: Article): Boolean = ???
 def delete(uuid: Int): Boolean = ???
 ```
 
-[Add `update` to Table and REPL]
+The implementation of the `update` case statement in the REPL is very similar to that of `insert`. The main difference is extracting the UUID from the input separately from the rest of the tail. Convert that piece to an integer and pass it to the update command--the rest should be the same. The implementaton of `update` in Table should overwrite an existing record if it exists.
 
-[Add `delete` to Table and REPL]
+The implementation of the `delete` case statement in the REPL is basically identical to that of `get`. Just make it call the `delete` method of Table instead of `get`. The implementation of Table should check that the target UUID does actually correspond to a record in the table, and delete it ([probably using `java.nio.file.Files`](https://docs.oracle.com/javase/tutorial/essential/io/delete.html)).
 
 Extra credit assignment #2: Add `dropTable` and `dropDb` commands to Database.
 
@@ -321,7 +321,7 @@ Extra credit assignment #3: Add one or more `find` commands to Table (your choic
 
 [Add FIND _ = _ to Table and REPL]
 
-_If you have had difficulty with the previous step and wish to see/use an example implementation thus far, check out [the step5 directory](../src/main/scala/tutorials/basics/step5) in this repo._
+_If you have had difficulty with the extra credit and wish to see/use example implementations, check out [the step5 directory](../src/main/scala/tutorials/basics/step5) in this repo._
 
 Extra extra extra credit: Modify the Database class so that it works with any data type (maybe some restrictions), rather than just Article. [no example provided yet--under construction]
 
