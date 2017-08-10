@@ -309,13 +309,7 @@ The implementation of the `delete` case statement in the REPL is basically ident
 
 Extra credit assignment #2: Add `dropTable` and `dropDb` commands to Database.
 
-```scala
-def dropTable()
-```
-
-[Add DROPTABLE to Database and REPL]
- 
-[Add DROPDB to Database and REPL]
+Unlike all prior functions, `droptable` and `dropdb` can be implemented completely in the REPL app, as this is the only place where table or database state are kept. Delete the corresponding directory from the file system, set the relevant state variable to None, and remove from a record-keeping Map if one is used. (Note that if you drop the current database, you'll want to set both the current table and current database variables to None--not just the database).
 
 Extra credit assignment #3: Add one or more `find` commands to Table (your choice, exact match or "contains").
 

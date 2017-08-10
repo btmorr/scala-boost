@@ -131,6 +131,10 @@ object Repl extends App {
             println( "No table selected--please enter `usetable <tablename>` first" )
         }
 
+      case "droptable" =>
+
+      case "dropdb" =>
+
       case "exit" => exitFlag = true
 
       case other => println( s"Invalid input: $other" )
