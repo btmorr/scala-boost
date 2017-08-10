@@ -90,17 +90,59 @@ Now, create a function that takes a string as input. If the string fits the patt
 def deserialize(input: String): Option[Article]
 ```
 
-You can choose your own name for the function and/or the input parameter, adjusting the signature accordingly. Once you've written the function, you can test it by adding this line:
+As an additional note about design, there are several places where you could put this function. Because its purpose is to get an Article out of something else, one common place to put it is in what's called the "companion object" to the case class. This is an `object` with the exact same name as the `case class`. This is what a companion object with a deserialize function would look like:
 
 ```scala
-println( deserialize( "Title\tAuthor\tPublishedAt\tDescription\tURL" ).get )
+case class Thing(name: String)
+
+object Thing {
+  def deserialize(input: String): Option[Thing] = Some( Thing( input ) )
+}
 ```
 
-If the funtion worked correclty, it will print `Title    Author    PublishedAt    Description    URL`. If not, it will throw an exception. Once we have a function like this, we can use it to change each line of data from a string to an Article. There are several functions that can do this. The most common ones are `map` and `flatMap`, each of which takes a function as its argument. The function has to have the same input type as the objects in the sequence, but the output type could be anything. Try using both of them to see how they behave (more background info [on this syntax tutorial from Twitter](https://twitter.github.io/scala_school/collections.html) under the "Functional Combinators" header if you get stuck or just want a more complete explanation of their behavior and other similar options). 
+You can choose your own name for the function and/or the input parameter, adjusting the signature accordingly. Once you've written the function, you can test it by adding this:
 
-Before we move on, if we have a `deserialize` function, it makes sense to have a `serialize` function that does the opposite.
+```scala
+val testArticle = Article.deserialize( "Title\tAuthor\tPublishedAt\tDescription\tURL" ).get
+assert( 
+  testArticle.title == "Title" && 
+  testArticle.author == "Author" && 
+  testArticle.publishedAt == "PublishedAt" &&
+  testArticle.description == "Description" &&
+  testArticle.url == "URL"
+)
+println("Passed!")
+```
 
-[write `serialize`]
+If the funtion worked correclty, it will print "Passed!". If not, it will throw an exception. An exception on the first line (probably saying "None.get") indicates that the expected format did not match what was in the TSV file. An exception on the assert means that maybe the fields were out of order. Print the `testArticle` object to see what's out of place. Once we have a function like this, we can use it to change each line of data from a string to an Article. There are several functions that can do this. The most common ones are `map` and `flatMap`, each of which takes a function as its argument. The function has to have the same input type as the objects in the sequence, but the output type could be anything. Try using both of them to see how they behave (more background info [on this syntax tutorial from Twitter](https://twitter.github.io/scala_school/collections.html) under the "Functional Combinators" header if you get stuck or just want a more complete explanation of their behavior and other similar options). 
+
+Before we move on, if we have a `deserialize` function, it makes sense to have a `serialize` function that does the opposite. This can just use string interpolation to unpack the Article into a string containing all of the info (in the format specified by the test for `deserialize`). Like `deserialize`, this function could go in several places. One good place to put it is onto the case class itself. Going pack to the Thing example, we would add a `serialize` function like this:
+
+```scala
+case class Thing(name: String) {
+  def serialize: String = s"Thing:$name"
+}
+
+object Thing {
+  def deserialize(input: String): Option[Thing] = Some( Thing( input.split(":").last ) )
+}
+```
+
+If you have written these two functions correctly, you should be able to do the following (only the test for Article, unless you added Thing for practice):
+
+```scala
+// Round-trip example for a Thing
+val inputThing = Thing("syzygy")
+val thingRecord = inputThing.serialize
+val outputThing = Thing.deserialize( thingRecord )
+assert( outputThing == inputThing )
+
+// Round-trip example for an Article
+val inputArticle = Article("Title", "Author", "Date", "Description", "URL")
+val articleRecord = inputArticle.serialize
+val outputArticle = Article.deserialize( articleRecord )
+assert( outputArticle == inputArticle )
+```
 
 [step1]
 
@@ -108,7 +150,13 @@ Before we move on, if we have a `deserialize` function, it makes sense to have a
 
 Use the functions from the last section to get a `Seq[Article]` with the data from the TSV file. Now, we can do other types of analysis and filtering, also using `map` and/or `flatMap`, and a similar function named `filter`.
 
-[examples of use of map, flatMap, and filter to do basic analysis]
+First, take a look at the articles, and choose a word that appears in some but not all of the records. Think about what fields it does and does not occur in, and which fields you care about for matching records.
+
+`map` and `flatMap` are good for taking each record, and picking out which sub-set of the data you care about. Maybe you only want to keep the title--this is pretty stright-forward. Write a function that takes an Article as the input, and returns the title from that Article. Then, you can call `map` on the input list of Articles, and get a list of Strings that only contains the titles. If you're writing a function that could conceivably fail, you might want to make the output an Option, and use `flatMap`. This will simply discard any failed cases, giving you only a list of the successes. Or you can use the function that returns the output inside of an Option with `map` instead, and be able to see which cases were successful and which were not.
+
+`filter` is used with a function that takes an item of the input type (in this case probably either Article or String), and returns either true or false. This function is applied to each member of the list, and members that resulted in "true" are kept, while those that resulted in "false" are discarded.
+
+You can filter and extract the data in many ways. One thing you might try is to take a list of Articles, and use `map`, `flatMap`, and/or `filter` to return a list of HTML hyperlinks in the format `<a href=[the url of the article]>[the title of the article]</a>`.
 
 [step2]
 
@@ -125,11 +173,12 @@ case class Database(name: String) {
   // If a database by this name exists, open it, else create an empty db with this name
   ???
   
+  // useTable should search for what tables exist in this db, rather than keeping state in memory
+  def useTable(tableName: String): Table = ???
+  
   case class Table(name: String) {
     // If a table by this name exists, open it, else create an empty table with this name
     ???
-    private def serialize(article: Article): String = ???
-    private def deserialize(string: String): Option[Article] = ???
     
     def insert(article: Article): Boolean = ???
     def get(uuid: Int): Option[Article] = ???
@@ -148,9 +197,7 @@ Some of these functions will need to interact with the file system. The function
 
 ### Use the database
 
-[make a version of the app that no longer reads from the TSV, and uses the db instead]
-
-[Make a REPL for the db, with the commands USEDB, USETABLE, GET, and INSERT]
+[Make a REPL app for the db, with the commands USEDB, USETABLE, GET, and INSERT]
 
 [step4]
 
@@ -169,7 +216,11 @@ def delete(uuid: Int): Boolean = ???
 
 [Add `delete` to Table and REPL]
 
-Extra credit assignment #2: Add `droptable` and `dropdb` commands to Database.
+Extra credit assignment #2: Add `dropTable` and `dropDb` commands to Database.
+
+```scala
+def dropTable()
+```
 
 [Add DROPTABLE to Database and REPL]
  
@@ -181,6 +232,8 @@ Extra credit assignment #3: Add one or more `find` commands to Table (your choic
 
 [step5]
 
+Extra extra extra credit: Modify the Database class so that it works with any data type (maybe some restrictions), rather than just Article.
+
 ## Notes
 
 If you're curious, I used this snippet to create data that was used for this tutorial, using articles from [NewsAPI](https://newsapi.org/), which is similar to an implementation of `serialze` used in `demo.Database.Table.insert`:
@@ -189,7 +242,7 @@ If you're curious, I used this snippet to create data that was used for this tut
   var nextUUID = 0
   
   val articleToTSV: (Article => String) = a => {
-    val result = s"$nextUUID\t${a.title}\t${a.author}\t${a.publishedAt}\t${a.description}\t${a.url}\n"
+    val result = s"${a.title}\t${a.author}\t${a.publishedAt}\t${a.description}\t${a.url}\n"
     nextUUID = nextUUID + 1
     result
   }
@@ -198,4 +251,3 @@ If you're curious, I used this snippet to create data that was used for this tut
 Further Reading:
 
 - For an extremely detailed discussion of database implementations and challenges, check out ["Designing Data Intensive Applications](http://shop.oreilly.com/product/0636920032175.do), especially Chapter 3
-
