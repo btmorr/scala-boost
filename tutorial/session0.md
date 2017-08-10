@@ -78,7 +78,7 @@ Title    Author    PublishedAt    Description    URL
 
 They are not included in the data itself, but you can see that each line follows this pattern.
 
-[step0]
+_If you have had difficulty with the previous step and wish to see/use an example implementation thus far, check out [the step0 directory](../src/main/scala/tutorials/basics/step0) in this repo._
 
 ## Formatting the data
 
@@ -144,9 +144,9 @@ val outputArticle = Article.deserialize( articleRecord )
 assert( outputArticle == inputArticle )
 ```
 
-[step1]
-
 ## Using the formatted data
+
+_If you have had difficulty with the previous step and wish to see/use an example implementation thus far, check out [the step1 directory](../src/main/scala/tutorials/basics/step1) in this repo._
 
 Use the functions from the last section to get a `Seq[Article]` with the data from the TSV file. Now, we can do other types of analysis and filtering, also using `map` and/or `flatMap`, and a similar function named `filter`.
 
@@ -158,7 +158,7 @@ First, take a look at the articles, and choose a word that appears in some but n
 
 You can filter and extract the data in many ways. One thing you might try is to take a list of Articles, and use `map`, `flatMap`, and/or `filter` to return a list of HTML hyperlinks in the format `<a href=[the url of the article]>[the title of the article]</a>`.
 
-[step2]
+_If you have had difficulty with the previous step and wish to see/use an example implementation thus far, check out [the step2 directory](../src/main/scala/tutorials/basics/step2) in this repo._
 
 ## Saving and sharing data
 
@@ -169,37 +169,61 @@ We have already created a bit of the functionality needed to build a database to
 ```scala
 package demo
 
-case class Database(name: String) {
+import java.nio.file._
+
+case class Database(rootDir: String)(name: String) {
   // If a database by this name exists, open it, else create an empty db with this name
-  ???
-  
-  // useTable should search for what tables exist in this db, rather than keeping state in memory
+  val databaseDir: Path = ???
+
   def useTable(tableName: String): Table = ???
-  
-  case class Table(name: String) {
-    // If a table by this name exists, open it, else create an empty table with this name
-    ???
-    
-    def insert(article: Article): Boolean = ???
-    def get(uuid: Int): Option[Article] = ???
-  }
 }
+
+case class Table(db: Database)(name: String) {
+  // If a table by this name exists, open it, else create an empty table with this name
+  private val tableDir: Path = ???
+
+  private var uuids: Set[Int] = ???
+  private var maxUUID = ???
+
+  // not required, but recommended to separate this out into its own function for use by multiple methods later
+  private def saveToFile(path: Path)(contents: String): Boolean = ???
+
+  // Add an article, assigning a new UUID
+  def insert(article: Article): Int = ???
+
+  // If an article exists with the specified UUID, get it
+  def get(uuid: Int): Option[Article] = ???
+}
+
 ```
 
-Everywhere that there are `???`, some kind of implementation is needed to make the database work correctly. [Hint: use the "serialize" and "deserialize" functions written earlier for writing and reading respectively]
+Everywhere that there are `???`, some kind of implementation is needed to make the database work correctly (you're welcome to add any other variables and functions that are helpful for solving the problem). [Hint: use the "serialize" and "deserialize" functions written earlier for writing and reading respectively]
 
 Some of these functions will need to interact with the file system. The function used earlier to read a file (from `scala.io.Source`) will work for actually reading the contents of a file, but for creating directories, listing folder contents, and checking if things already exists, you'll want to look at the functions in "NIO", especially `java.nio.file.Files` and `java.nio.file.Path`. `Files` provides functions such as `createDirectories` (most functions in `Files` return a `Path`). A `Path` can be converted to a `java.nio.file.File` using the `toFile` function, and the resulting `File` provides `listFiles` for the contents of a directory, `getName` for the filename, etc. Check out the [this tutorial on Path](http://tutorials.jenkov.com/java-nio/path.html) and [this one on Files](http://tutorials.jenkov.com/java-nio/files.html) for info and examples. There's also good info in [the NIO javadocs](https://docs.oracle.com/javase/7/docs/api/java/nio/file/Files.html).
 
+Start with filling in Database. The directory where the data should be stored is passed as `rootDir`, and the db also has a `name`. The most straight-forward way to store this info in the filesystem is to create a directory named by the `name` variable inside of the directory specified by `rootDir`. Check out the documentation for `java.nio.files.Files` for helpful methods.
 
-[Explain each function, and walk through implementing and testing them]
+Wait on `useTable`, and start filling in Table. Table has a variable that acts just like `databaseDir`, so you can do the same thing here that you did in Database.
 
-[step3]
+Next are `uuids` and `maxUUID`. `uuids` should keep track of all of the IDs that have been used for records already, and maxUUID should point to the highest number UUID at the time that the class is loaded.
+
+`saveFile` should take a Path and contents to write, and write the contents to the specified file.
+
+`insert` should take an Article, assign it an unused UUID, and then write it to a file with the UUID as the filename (feel free to include other info in the filename, such as a file extension, as long as it doesn't impede making `get` work correctly).
+
+`get` should open the file corresponding to a specified UUID, and return the contents, or None if there is no record for that UUID.
+
+Now, go back and finish `useTable` in Database. This should create a new instance of Table with the Database instance (a.k.a.: `this`) and the specified table name.
+
+_If you have had difficulty with the previous step and wish to see/use an example implementation thus far, check out [the step3 directory](../src/main/scala/tutorials/basics/step3) in this repo._
 
 ### Use the database
 
+Now it's time to make a User Interface. The first thing this app needs is to know the path in the filesystem where the database will be stored. You're welcome to make whatever design decision makes sense to you--you can add this as an additional parameter to the Database class, hard-code it to the current directory, or specify some set path based on an environment variable that is set on all operating systems, such as `HOME` (in the example implementation, I made this a parameter, and passed in `sys.env("HOME") + "/.newbiedb"` at the callsite).
+
 [Make a REPL app for the db, with the commands USEDB, USETABLE, GET, and INSERT]
 
-[step4]
+_If you have had difficulty with the previous step and wish to see/use an example implementation thus far, check out [the step4 directory](../src/main/scala/tutorials/basics/step4) in this repo._
 
 ### Database extra credit
 
@@ -230,9 +254,9 @@ Extra credit assignment #3: Add one or more `find` commands to Table (your choic
 
 [Add FIND _ = _ to Table and REPL]
 
-[step5]
+_If you have had difficulty with the previous step and wish to see/use an example implementation thus far, check out [the step5 directory](../src/main/scala/tutorials/basics/step5) in this repo._
 
-Extra extra extra credit: Modify the Database class so that it works with any data type (maybe some restrictions), rather than just Article.
+Extra extra extra credit: Modify the Database class so that it works with any data type (maybe some restrictions), rather than just Article. [no example provided yet--under construction]
 
 ## Notes
 

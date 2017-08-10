@@ -1,7 +1,7 @@
 package tutorials.basics
 package step3
 
-import java.io.{File, PrintWriter}
+import java.io.{ File, PrintWriter }
 import java.nio.file._
 
 import scala.io.Source
@@ -12,10 +12,10 @@ case class Database(rootDir: String)(name: String) {
   val fileExtension: String = "rec"
 
   // If a database by this name exists, open it, else create an empty db with this name
-  val databaseDir: Path = Files.createDirectories(Paths.get(rootDir, name))
-  println(s"Database root: $databaseDir")
+  val databaseDir: Path = Files.createDirectories( Paths.get( rootDir, name ) )
+  println( s"Database root: $databaseDir" )
 
-  def useTable(name: String): Table = Table(this)(name)
+  def useTable(tableName: String): Table = Table( this )( tableName )
 }
 
 case class Table(db: Database)(name: String) {
