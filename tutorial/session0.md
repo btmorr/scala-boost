@@ -68,7 +68,9 @@ val home = sys.env.get("HOME")
 val dataFilePath = s"$home/scala-boost/data/basics_data.tsv"
 ```
 
-This has the path, now we need to actually read the contents of the file. The `scala.io.Source` package contains functions for reading from files. Check out [the documentation for io.Source](http://www.scala-lang.org/api/2.11.11/index.html#scala.io.Source$) for a simple function that will open a file (hint: you want the one that accepts a String as the argument). This funtion has a return type that you can click to find the function that you can use to actually read the lines. Following this call, you should have an `Iterator[String]`. An Iterator is like a list, except you can only go through the data once. We may want to use it a few times, so go ahead and convert it from an Iterator to a Seq.
+For a quick reference on objects, functions, variables, etc, Twitter provides a great [primer on core structures and concepts](http://twitter.github.io/effectivescala/) as well, with a topical index so you can go straight to the topic that is throwing an error.
+
+Now that we've created the path, we need to actually read the contents of the file. The `scala.io.Source` package contains functions for reading from files. Check out [the documentation for io.Source](http://www.scala-lang.org/api/2.11.11/index.html#scala.io.Source$) for a simple function that will open a file (hint: you want the one that accepts a String as the argument). This funtion has a return type that you can click to find the function that you can use to actually read the lines. Following this call, you should have an `Iterator[String]`. An Iterator is like a list, except you can only go through the data once. We may want to use it a few times, so go ahead and convert it from an Iterator to a Seq.
 
 Once you have the the data in a sequence, this is a great time to print it and see what it looks like. The column headers are:
 
