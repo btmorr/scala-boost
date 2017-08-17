@@ -8,7 +8,7 @@ In my experience, [syntax is something you can look up](http://docs.scala-lang.o
 
 The goal of this tutorial is to get the reader as quickly as possible to actually solve an interesting problem, and have a complete app that they can deploy. This tutorial will aim to use only the tools that are available in Scala itself, without external dependencies. Specifically, you will be building a simple relational database, along the lines of a minimum-viable-product for a database similar to [sqlite](https://www.sqlite.org/).
 
-This tutorial assumes that you have at least basic experience programming in some language. Pretty much any one will do: Python, C, Java, R, Ruby, etc. It will touch on some advanced topics, including distributed systems, but does not require previous knowledge or experience with those topics. Working through the tutorial should take between \_?\_ and \_?\_ hours of work (estimate, based on the wonderful folks who have helped test and refine it, and learned Scala in the process). After the first few lines of starter code, instructions are provided on what to accomplish but little or no more code is given. Links will be provided to documentation, blog posts, etc where hints and solutions can be found, and if you get extremely stuck, this repo also contains [complete solutions to the tutorial](../src/main/scala/tutorials/basics) broken down into steps that roughly correspond to stages of the instructions, so you can look there if the links do not provide clear help.
+This tutorial assumes that you have at least basic experience programming in some language. Pretty much any one will do: Python, C, Java, R, Ruby, etc. It will touch on some advanced topics, including distributed systems, but does not require previous knowledge or experience with those topics. Working through the tutorial should take between \_?\_ and \_?\_ hours of work (estimate, based on the wonderful folks who have helped test and refine it, and learned Scala in the process). After the first few lines of starter code, instructions are provided on what to accomplish but little or no more code is given. Links will be provided to documentation, blog posts, etc where hints and solutions can be found, and if you get extremely stuck, this repo also contains [complete solutions to the tutorial](../src/main/scala/tutorials/basics) broken down into steps that roughly correspond to stages of the instructions, so you can look there if the links do not provide clear help. 
 
 ## Let's get started
 
@@ -53,7 +53,7 @@ In the root of this repository, there is a folder named "data" with a filed name
 
 The first thing to do is read the data from the file, and print it out, so we can get an idea of what's in there. The first thing to do is figure out where the file is located. Your user's home directory is saved in the `HOME` environment variable in your operating system. If you checked out this repository in your home directory, then the data file is located at `$HOME/scala-boost/data/basics_data.tsv`.
 
-In Scala, all functionality has to be housed in an object. These can stand alone, or can "extend" other objects to add functionality ("extends" is the Scala keyword for inheriting from another class, which will probably be familiar if you have worked in another object-oriented language). In our case, we want to create an object that extends `App`, which will turn whatever we put in that object into an application that can be run. Make an object in "Demo.scala", after the package line:
+In Scala, all functionality has to be housed in an object. These can stand alone, or can "extend" other classes/traits to add functionality ("extends" is the Scala keyword for inheriting from another class, which will probably be familiar if you have worked in another object-oriented language). In our case, we want to create an object that extends `App`, which will turn whatever we put in that object into an application that can be run. Make an object in "Demo.scala", after the package line:
 
 ```scala
 object Demo extends App {
@@ -92,13 +92,13 @@ Now, create a function that takes a string as input. If the string fits the patt
 def deserialize(input: String): Option[Article]
 ```
 
-As an additional note about design, there are several places where you could put this function. Because its purpose is to get an Article out of something else, one common place to put it is in what's called the "companion object" to the case class. This is an `object` with the exact same name as the `case class`. This is what a companion object with a deserialize function would look like:
+As an additional note about design, there are several places where you could put this function. Because its purpose is to get an Article out of something else, one common place to put it is in what's called the "companion object" to the case class. This is an `object` with the exact same name as the `case class`. This is what a companion object with a deserialize function would look like on a simplified version of an Article:
 
 ```scala
-case class Thing(name: String)
+case class Article(name: String)
 
-object Thing {
-  def deserialize(input: String): Option[Thing] = Some( Thing( input ) )
+object Article {
+  def deserialize(input: String): Option[Article] = Some( Article( input ) )
 }
 ```
 
@@ -116,30 +116,23 @@ assert(
 println("Passed!")
 ```
 
-If the funtion worked correclty, it will print "Passed!". If not, it will throw an exception. An exception on the first line (probably saying "None.get") indicates that the expected format did not match what was in the TSV file. An exception on the assert means that maybe the fields were out of order. Print the `testArticle` object to see what's out of place. Once we have a function like this, we can use it to change each line of data from a string to an Article. There are several functions that can do this. The most common ones are `map` and `flatMap`, each of which takes a function as its argument. The function has to have the same input type as the objects in the sequence, but the output type could be anything. Try using both of them to see how they behave (more background info [on this syntax tutorial from Twitter](https://twitter.github.io/scala_school/collections.html) under the "Functional Combinators" header if you get stuck or just want a more complete explanation of their behavior and other similar options). 
+If the funtion worked correclty, it will print "Passed!". If not, it will throw an exception. An exception on the first line (probably saying "None.get") indicates that the expected format did not match what was in the TSV file. An exception on the assert means that maybe the fields were out of order. Print the `testArticle` object to see what's out of place. Once we have a function like this, we can use it to change each line of data from a string to an Article. There are several functions that can do this. One very common example is `map` which takes a function as its argument and applies that function to each member of a sequence. The function has to have the same input type as the objects in the sequence, but the output type could be anything. Try using both of them to see how they behave (more background info [on this syntax tutorial from Twitter](https://twitter.github.io/scala_school/collections.html) under the "Functional Combinators" header if you get stuck or just want a more complete explanation of their behavior and other similar options). 
 
-Before we move on, if we have a `deserialize` function, it makes sense to have a `serialize` function that does the opposite. This can just use string interpolation to unpack the Article into a string containing all of the info (in the format specified by the test for `deserialize`). Like `deserialize`, this function could go in several places. One good place to put it is onto the case class itself. Going pack to the Thing example, we would add a `serialize` function like this:
+Before we move on, if we have a `deserialize` function, it makes sense to have a `serialize` function that does the opposite. This can just use string interpolation to unpack the Article into a string containing all of the info (in the format specified by the test for `deserialize`). Like `deserialize`, this function could go in several places. One good place to put it is onto the case class itself. Using a simplified version of Article, with only a name, we would add a `serialize` function like this:
 
 ```scala
-case class Thing(name: String) {
-  def serialize: String = s"Thing:$name"
+case class Article(name: String) {
+  def serialize: String = s"Article:$name"
 }
 
-object Thing {
-  def deserialize(input: String): Option[Thing] = Some( Thing( input.split(":").last ) )
+object Article {
+  def deserialize(input: String): Option[Article] = Some( Article( input.split(":").last ) )
 }
 ```
 
-If you have written these two functions correctly, you should be able to do the following (only the test for Article, unless you added Thing for practice):
+If you have written these two functions correctly, you should be able to do the following:
 
 ```scala
-// Round-trip example for a Thing
-val inputThing = Thing("syzygy")
-val thingRecord = inputThing.serialize
-val outputThing = Thing.deserialize( thingRecord )
-assert( outputThing == inputThing )
-
-// Round-trip example for an Article
 val inputArticle = Article("Title", "Author", "Date", "Description", "URL")
 val articleRecord = inputArticle.serialize
 val outputArticle = Article.deserialize( articleRecord )
@@ -150,7 +143,7 @@ assert( outputArticle == inputArticle )
 
 _If you have had difficulty with the previous step and wish to see/use an example implementation thus far, check out [the step1 directory](../src/main/scala/tutorials/basics/step1) in this repo._
 
-Use the functions from the last section to get a `Seq[Article]` with the data from the TSV file. Now, we can do other types of analysis and filtering, also using `map` and/or `flatMap`, and a similar function named `filter`.
+Use the functions from the last section to get a `Seq[Article]` with the data from the TSV file. Now, we can do other types of analysis and filtering, also using `map` and/or `flatMap`, and a similar function named `filter`. If you have a list of strings, and you want a list of integers, you could use either `map` or `flatMap`. If you definitely want to keep every value in the list, use `map`, and write a function to use with it that takes a String as its input type, and has Int as its output type, which we sometimes write as `String => Int`. If the funciton might fail sometimes (let's say you're converting a string to an integer, but the string is "a"), you can write a function that takes a `String` and returns an `Option[Int]` (also written `String => Option[Int]`), and use `flatMap` instead of `map`. This will go over the list, apply the function to each item, and create a list of results that only includes the successful items.
 
 First, take a look at the articles, and choose a word that appears in some but not all of the records. Think about what fields it does and does not occur in, and which fields you care about for matching records.
 
