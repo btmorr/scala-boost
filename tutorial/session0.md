@@ -14,7 +14,13 @@ This tutorial assumes that you have at least basic experience programming in som
 
 ### Intall Scala and sbt
 
-If you have already installed the Java JDK (preferably version 8), Scala, and sbt, skip down to [Set up a new project](#set-up-a-new-project). If not, follow the instructions on [Scala's install page](https://www.scala-lang.org/documentation/getting-started-sbt-track/getting-started-with-scala-and-sbt-in-the-command-line.html)
+If you have already installed the Java JDK (preferably version 8), Scala, and sbt, skip down to [Set up a new project](#set-up-a-new-project). If not, follow the instructions on [Scala's install page](https://www.scala-lang.org/documentation/getting-started-sbt-track/getting-started-with-scala-and-sbt-in-the-command-line.html).
+
+sbt is currently the most common (though definitely not only) build tool used for Scala. The most common commands to know are:
+
+- `sbt compile` - Compiles Scala code into Java bytecode that can be run. This will often involve downloading things from the internet, especially the first time you run it.
+- `sbt test` - Runs any tests you have written (also compiles, if you have not done so).
+- `sbt run` - Runs your application.
 
 ### Set up a new project
 
@@ -57,11 +63,13 @@ In Scala, all functionality has to be housed in an object. These can stand alone
 
 ```scala
 object Demo extends App {
-
+  println("Hello, World!")
 }
 ```
 
-Inside of that object, you can use the `sys.env.get` function to read an environment variable. Use this to get the home directory, and then add the path to where the data file is checked out. To build the string mentioned previously, this would look like:
+Now you can go to the command line in the directory of your project (the one that contains the `src` folder) and type `sbt run` to see it compile and then print "Hello, World!" Yay! Throughout the rest of the tutorial, run either `sbt compile` or `sbt run` to compile and/or run your code. The compile will print error messages when there's something wrong--these are really confusing occasionally, but they'll provide direction, or at least an error message to search for help. Once you get familiar with them, they actually help you write your application.
+
+Inside of the Demo object, you can use the `sys.env.get` function to read an environment variable. Use this to get the home directory, and then add the path to where the data file is checked out. To build the string mentioned previously, this would look like:
 
 ```scala
 val home = sys.env.get("HOME")
