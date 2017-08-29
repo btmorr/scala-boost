@@ -67,18 +67,20 @@ object Demo extends App {
 }
 ```
 
-Now you can go to the command line in the directory of your project (the one that contains the `src` folder) and type `sbt run` to see it compile and then print "Hello, World!" Yay! Throughout the rest of the tutorial, run either `sbt compile` or `sbt run` to compile and/or run your code. The compile will print error messages when there's something wrong--these are really confusing occasionally, but they'll provide direction, or at least an error message to search for help. Once you get familiar with them, they actually help you write your application.
+Now you can go to the command line in the directory of your project (the one that contains the `src` folder) and type `sbt run` to see it compile and then print "Hello, World!" Yay! Throughout the rest of the tutorial, run either `sbt compile` or `sbt run` to compile and/or run your code. The compiler will print error messages when there's something wrong--these are really confusing occasionally, but they'll provide direction, or at least an error message to search for help. Once you get familiar with them, they actually help you write your application.
 
-Inside of the Demo object, you can use the `sys.env.get` function to read an environment variable. Use this to get the home directory, and then add the path to where the data file is checked out. To build the string mentioned previously, this would look like:
+Inside of the `Demo` object, you can use the `sys.env.get` function to read an environment variable. Use this to get the home directory, and then add the path to where the data file is checked out. To build the string mentioned previously, this would look like:
 
 ```scala
 val home = sys.env.get("HOME")
 val dataFilePath = s"$home/scala-boost/data/basics_data.tsv"
 ```
 
+The `s` that appears before the string we assign to `dataFilePath` is known as a [string interpolator](https://docs.scala-lang.org/overviews/core/string-interpolation.html), which replaces variables in a string with their values. In this case, the interpolator expands `$home` into the value assigned to `home`.
+
 For a quick reference on objects, functions, variables, etc, Twitter provides a great [primer on core structures and concepts](http://twitter.github.io/effectivescala/) as well, with a topical index so you can go straight to the topic that is throwing an error.
 
-Now that we've created the path, we need to actually read the contents of the file. The `scala.io.Source` package contains functions for reading from files. Check out [the documentation for io.Source](http://www.scala-lang.org/api/2.11.11/index.html#scala.io.Source$) for a simple function that will open a file (hint: you want the one that accepts a String as the argument). This funtion has a return type that you can click to find the function that you can use to actually read the lines. Following this call, you should have an `Iterator[String]`. An Iterator is like a list, except you can only go through the data once. We may want to use it a few times, so go ahead and convert it from an Iterator to a Seq.
+Now that we've created the path, we need to actually read the contents of the file. The `scala.io.Source` package contains functions for reading from files. Check out [the documentation for io.Source](http://www.scala-lang.org/api/2.11.11/index.html#scala.io.Source$) for a simple function that will open a file if you give it a file path (hint: you want the one that accepts a String as the argument). This function has a return type (which appears after the colon) that you can click to find the function that you can use to actually read (or _get_) the lines. Following this call, you should have an `Iterator[String]`. An `Iterator` is like a list, except you can only go through the data once. We may want to use it a few times, so go ahead and convert it from an `Iterator` to a `Seq`.
 
 Once you have the the data in a sequence, this is a great time to print it and see what it looks like. The column headers are:
 
@@ -94,7 +96,7 @@ _If you have had difficulty with the previous step and wish to see/use an exampl
 
 TSV-formatted data is good for storing on disk, but this is not very easy to work with directly. "case classes" are data structures in Scala that are useful for structuring this kind of object. In a relational database (one with defined columns where each row has the same number of items in the same order, and each item has a set type), each row corresponds well to an instance of a class. Create a new file in the source directory named "Article.scala", and add the package statement and a case class named Article, with a field for each column in the table.
 
-Now, create a function that takes a string as input. If the string fits the pattern of the columns in our data table, the function should return an instance of the class. If not, it should fail (take a look at [this blog](http://danielwestheide.com/blog/2012/12/19/the-neophytes-guide-to-scala-part-5-the-option-type.html) for an introduction to the Option type, which makes this success-or-failure checking work well). The function should have the following signature:
+Now, create a function that takes a string as input. If the string fits the pattern of the columns in our data table, the function should return an instance of the class. If not, it should fail (take a look at [this blog](http://danielwestheide.com/blog/2012/12/19/the-neophytes-guide-to-scala-part-5-the-option-type.html) for an introduction to the `Option` type, which makes this success-or-failure checking work well). The function should have the following signature:
 
 ```scala
 def deserialize(input: String): Option[Article]
@@ -124,9 +126,9 @@ assert(
 println("Passed!")
 ```
 
-If the funtion worked correclty, it will print "Passed!". If not, it will throw an exception. An exception on the first line (probably saying "None.get") indicates that the expected format did not match what was in the TSV file. An exception on the assert means that maybe the fields were out of order. Print the `testArticle` object to see what's out of place. Once we have a function like this, we can use it to change each line of data from a string to an Article. There are several functions that can do this. One very common example is `map` which takes a function as its argument and applies that function to each member of a sequence. The function has to have the same input type as the objects in the sequence, but the output type could be anything. Try using both of them to see how they behave (more background info [on this syntax tutorial from Twitter](https://twitter.github.io/scala_school/collections.html) under the "Functional Combinators" header if you get stuck or just want a more complete explanation of their behavior and other similar options). 
+If the function worked correctly, it will print "Passed!". If not, it will throw an exception. An exception on the first line (probably saying "None.get") indicates that the expected format did not match what was in the TSV file. An exception on the assert means that maybe the fields were out of order. Print the `testArticle` object to see what's out of place. Once we have a function like this, we can use it to change each line of data from a string to an `Article`. There are several functions that can do this. One very common example is `map` which takes a function as its argument and applies that function to each member of a sequence. The function has to have the same input type as the objects in the sequence, but the output type could be anything. Try using both of them to see how they behave (more background info [on this syntax tutorial from Twitter](https://twitter.github.io/scala_school/collections.html) under the "Functional Combinators" header if you get stuck or just want a more complete explanation of their behavior and other similar options).
 
-Before we move on, if we have a `deserialize` function, it makes sense to have a `serialize` function that does the opposite. This can just use string interpolation to unpack the Article into a string containing all of the info (in the format specified by the test for `deserialize`). Like `deserialize`, this function could go in several places. One good place to put it is onto the case class itself. Using a simplified version of Article, with only a name, we would add a `serialize` function like this:
+Before we move on, if we have a `deserialize` function, it makes sense to have a `serialize` function that does the opposite. This can just use string interpolation to unpack the `Article` into a string containing all of the info (in the format specified by the test for `deserialize`). Like `deserialize`, this function could go in several places. One good place to put it is onto the case class itself. Using a simplified version of `Article`, with only a name, we would add a `serialize` function like this:
 
 ```scala
 case class Article(name: String) {
