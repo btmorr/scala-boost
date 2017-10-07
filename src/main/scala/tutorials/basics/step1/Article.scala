@@ -1,4 +1,5 @@
-package tutorials.basics.step1
+package tutorials.basics
+package step1
 
 case class Article(
   title: String,
@@ -7,14 +8,14 @@ case class Article(
   description: String,
   url: String
 ) {
-  def toDbRecord: String =
+  def serialize: String =
     Seq(title, author, publishedAt, description, url).mkString(Article.separator)
 }
 
 object Article {
   val separator = ";"
 
-  val fromDbRecord: (String => Option[Article]) = input => {
+  val deserialize: (String => Option[Article]) = input => {
     val splitInput = input.stripLineEnd.split(";")
     splitInput match {
       case split if split.length == 5 => Some( Article(

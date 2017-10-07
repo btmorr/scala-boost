@@ -1,5 +1,5 @@
 package tutorials.basics
-package database
+package step0
 
 object Repl extends App {
 	var done = false

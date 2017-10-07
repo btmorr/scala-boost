@@ -156,7 +156,62 @@ assert( outputArticle == inputArticle )
 
 _If you have had difficulty with the previous step and wish to see/use an example implementation thus far, check out [the step1 directory](../src/main/scala/tutorials/basics/step1) in this repo._
 
+## Saving and sharing data
+
+_In a real database, saved data would be stored on the hard drive, in some kind of files so that when the application is restarted the data will not be lost. For our example, we will not actually write to disk, but we will still "save" the data to an in-memory dictionary that will serve as a standing for file I/O operations._
+
+Applications do a lot of processing in memory, but most eventually need to save, shared, and read data from some kind of storage. In modern applications, this is generally done with a database. There are many different kinds of database, each of which provides different pros and cons for saving and searching different kinds of data. The most common traditional kind is called a relational database (or RDBMS), and under the hood it saves data to normal files very similar to CSV files.
+
+We have already created a bit of the functionality needed to build a database to save `Article`s. Now, let's add a few more functions to implement a very basic relational database from scratch. Copy this skeleton into a new file named "Database.scala" in the source directory:
+
+```scala
+package database
+
+import scala.util.Try
+
+case class Database(name: String) {
+  var tables: Set[Table] = Set.empty
+  var currentTable: Option[Table] = None
+  def useTable(tableName: String): Table = {
+    ???
+  }
+  
+  // functions to make it possible for the app using the Database to call methods from the Table, even though 
+  // it is a private case class
+  def insert(article: Article): Option[Int] = currentTable.get.insert( article )
+  def get(id: Int): Option[Article] = currentTable.flatMap( _.get( id ) )
+}
+
+private case class Table(name: String) {
+  // Notice that this is a map of Int -> String. While a purely in-memory database _could_ contain actual Article
+  // objects, we are replicating the behavior of a database that would store objects in files, so it has to save
+  // them as strings and then turn them from strings back into objects
+  private var records: Map[Int, String] = Map.empty
+
+  def insert(article: Article): Option[Int] = {
+    ???
+  }
+
+  def get(id: Int): Option[Article] =
+    ???
+
+}
+
+```
+
+Everywhere that there are `???`, some kind of implementation is needed to make the database work correctly (you're welcome to add any other variables and functions that are helpful for solving the problem). [Hint: use the "serialize" and "deserialize" functions written earlier for writing and reading respectively]
+
+Start with filling in Database. The database needs to keep track of what Tables have been created and which one is currently active. You can fill out the `useTable` function without having to know exactly how Table will work yet. The key thing to remember in implementing this function is that if a table with the specified name has already been opened earlier, it should find that Table rather than creating a new one.
+
+Inside Table, `insert` should take an Article, assign it an unused ID integer, and then save it to a Map[Int, String], where the key is the ID number, and the value is the serialized version of the Article. Even though it can't actually fail in this version of the database, return the result inside of a Some, since in a real database there are several ways that an insert could fail.
+
+`get` should retrieve the record corresponding to the specified ID, convert it back into an Article and return it, or return None if there is no record for that ID.
+
+_If you have had difficulty with the previous step and wish to see/use an example implementation thus far, check out [the step3 directory](../src/main/scala/tutorials/basics/step2) in this repo._
+
 ## Using the formatted data
+
+[=----------------=]
 
 Use the functions from the last section to get a `Seq[Article]` with the data from the TSV file. Now, we can do other types of analysis and filtering, also using `map` and/or `flatMap`, and a similar function named `filter`. If you have a list of strings, and you want a list of integers, you could use either `map` or `flatMap`. If you definitely want to keep every value in the list, use `map`, and write a function to use with it that takes a String as its input type, and has Int as its output type, which we sometimes write as `String => Int`. If the funciton might fail sometimes (let's say you're converting a string to an integer, but the string is "a"), you can write a function that takes a `String` and returns an `Option[Int]` (also written `String => Option[Int]`), and use `flatMap` instead of `map`. This will go over the list, apply the function to each item, and create a list of results that only includes the successful items.
 
@@ -169,63 +224,6 @@ First, take a look at the articles, and choose a word that appears in some but n
 You can filter and extract the data in many ways. One thing you might try is to take a list of Articles, and use `map`, `flatMap`, and/or `filter` to return a list of HTML hyperlinks in the format `<a href=[the url of the article]>[the title of the article]</a>`.
 
 _If you have had difficulty with the previous step and wish to see/use an example implementation thus far, check out [the step2 directory](../src/main/scala/tutorials/basics/step2) in this repo._
-
-## Saving and sharing data
-
-Applications do a lot of processing in memory, but most eventually need to save, shared, and read data from some kind of storage. In modern applications, this is generally done with a database. There are many different kinds of database, each of which provides different pros and cons for saving and searching different kinds of data. The most common traditional kind is called a relational database (or RDBMS), and under the hood it works very similarly to the TSV file on disk that we read from earlier.
-
-We have already created a bit of the functionality needed to build a database to save `Article`s. Now, let's add a few more functions to implement a very basic relational database from scratch. Copy this skeleton into a new file named "Database.scala" in the source directory:
-
-```scala
-package database
-
-import java.nio.file._
-
-case class Database(rootDir: String)(name: String) {
-  // If a database by this name exists, open it, else create an empty db with this name
-  val databaseDir: Path = ???
-
-  def useTable(tableName: String): Table = ???
-}
-
-case class Table(db: Database)(name: String) {
-  // If a table by this name exists, open it, else create an empty table with this name
-  private val tableDir: Path = ???
-
-  private var uuids: Set[Int] = ???
-  private var maxUUID = ???
-
-  // not required, but recommended to separate this out into its own function for use by multiple methods later
-  private def saveToFile(path: Path)(contents: String): Boolean = ???
-
-  // Add an article, assigning a new UUID
-  def insert(article: Article): Int = ???
-
-  // If an article exists with the specified UUID, get it
-  def get(uuid: Int): Option[Article] = ???
-}
-
-```
-
-Everywhere that there are `???`, some kind of implementation is needed to make the database work correctly (you're welcome to add any other variables and functions that are helpful for solving the problem). [Hint: use the "serialize" and "deserialize" functions written earlier for writing and reading respectively]
-
-Some of these functions will need to interact with the file system. The function used earlier to read a file (from `scala.io.Source`) will work for actually reading the contents of a file, but for creating directories, listing folder contents, and checking if things already exists, you'll want to look at the functions in "NIO", especially `java.nio.file.Files` and `java.nio.file.Path`. `Files` provides functions such as `createDirectories` (most functions in `Files` return a `Path`). A `Path` can be converted to a `java.nio.file.File` using the `toFile` function, and the resulting `File` provides `listFiles` for the contents of a directory, `getName` for the filename, etc. Check out the [this tutorial on Path](http://tutorials.jenkov.com/java-nio/path.html) and [this one on Files](http://tutorials.jenkov.com/java-nio/files.html) for info and examples. There's also good info in [the NIO javadocs](https://docs.oracle.com/javase/7/docs/api/java/nio/file/Files.html).
-
-Start with filling in Database. The directory where the data should be stored is passed as `rootDir`, and the db also has a `name`. The most straight-forward way to store this info in the filesystem is to create a directory named by the `name` variable inside of the directory specified by `rootDir`. Check out the documentation for `java.nio.files.Files` for helpful methods.
-
-Wait on `useTable`, and start filling in Table. Table has a variable that acts just like `databaseDir`, so you can do the same thing here that you did in Database.
-
-Next are `uuids` and `maxUUID`. `uuids` should keep track of all of the IDs that have been used for records already, and maxUUID should point to the highest number UUID at the time that the class is loaded.
-
-`saveFile` should take a Path and contents to write, and write the contents to the specified file.
-
-`insert` should take an Article, assign it an unused UUID, and then write it to a file with the UUID as the filename (feel free to include other info in the filename, such as a file extension, as long as it doesn't impede making `get` work correctly).
-
-`get` should open the file corresponding to a specified UUID, and return the contents, or None if there is no record for that UUID.
-
-Now, go back and finish `useTable` in Database. This should create a new instance of Table with the Database instance (a.k.a.: `this`) and the specified table name.
-
-_If you have had difficulty with the previous step and wish to see/use an example implementation thus far, check out [the step3 directory](../src/main/scala/tutorials/basics/step3) in this repo._
 
 ### Use the database
 
