@@ -8,12 +8,14 @@ case class Article(
   url: String
 ) {
   def toDbRecord: String =
-    s"$title\t$author\t$publishedAt\t$description\t$url"
+    Seq(title, author, publishedAt, description, url).mkString(Article.separator)
 }
 
 object Article {
+  val separator = ";"
+
   val fromDbRecord: (String => Option[Article]) = input => {
-    val splitInput = input.stripLineEnd.split("\t")
+    val splitInput = input.stripLineEnd.split(";")
     splitInput match {
       case split if split.length == 5 => Some( Article(
         split(0), // head,
