@@ -1,9 +1,9 @@
 package tutorials.basics
 package step4
 
-import step3.Table
+import step2.Table
 import tutorials.basics.step1.Article
-import tutorials.basics.step2.{Database, Table}
+import tutorials.basics.step3.{Database, Table}
 
 import scala.util.Try
 

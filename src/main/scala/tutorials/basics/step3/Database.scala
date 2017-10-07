@@ -1,5 +1,5 @@
 package tutorials.basics
-package step2
+package step3
 
 import tutorials.basics.step1.Article
 

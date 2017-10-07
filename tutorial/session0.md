@@ -156,6 +156,54 @@ assert( outputArticle == inputArticle )
 
 _If you have had difficulty with the previous step and wish to see/use an example implementation thus far, check out [the step1 directory](../src/main/scala/tutorials/basics/step1) in this repo._
 
+## Using the formatted data
+
+_This is technically a side-note to building the database, but an important one. Operating on formatted data provides a good sense of why we're saving the data and using formatted objects at all, and helps with understanding how the data stored in a database will be used. That said, it is strictly optional to the rest of the demo, so spend as much or as little time on it as you like._
+
+This repo includes a CSV file with some example data. As discussed above, a comma is not a good separator for text, so the file uses a semicolon for the separator. If you chose something different, you'll need to open that file and use replace the semicolons with your chosen separator before moving forward.
+
+Now, paste the following text into a file named Demo.scala:
+
+```scala
+package database
+
+object Demo extends App {
+  if( args.length != 1) println("Please input exactly one argument for the input file")
+  else {
+    val filename = args(0)
+    val rows = scala.io.Source.fromFile(filename).mkString.split("\n")
+  
+  
+    val articles = rows map Article.deserialize
+    println("\n===>Articles:")
+    articles.flatten.foreach(println)
+  
+    val isAboutBears: ( Article => Boolean ) = article =>
+      ( article.title contains "bear" ) || ( article.description contains "bear" )
+  
+    val filteredArticles = articles.flatten.filter(isAboutBears)
+    println("\n===>Filtered articles:")
+    filteredArticles foreach println
+  
+    val importantBits = filteredArticles.map( article => s"<a href=${article.url}>${article.title}</a>" )
+    println("\n===>Important bits:")
+    importantBits foreach println
+  }
+}
+```
+
+This demo uses functions from the last section to get a `Seq[Article]` with the data from the CSV file, and performs a few example actions. Now, we can do other types of analysis and filtering, also using `map` and/or `flatMap`, and a similar function named `filter`. If you have a list of strings, and you want a list of integers, you could use either `map` or `flatMap`. If you definitely want to keep every value in the list, use `map`, and write a function to use with it that takes a String as its input type, and has Int as its output type, which we sometimes write as `String => Int`. If the function might fail sometimes (let's say you're converting a string to an integer, but the string is "a"), you can write a function that takes a `String` and returns an `Option[Int]` (also written `String => Option[Int]`), and use `flatMap` instead of `map`. This will go over the list, apply the function to each item, and create a list of results that only includes the successful items.
+
+First, take a look at the articles, and choose a word that appears in some but not all of the records. Think about what fields it does and does not occur in, and which fields you care about for matching records.
+
+`map` and `flatMap` are good for taking each record, and picking out which sub-set of the data you care about. Maybe you only want to keep the title--this is pretty straight-forward. Write a function that takes an Article as the input, and returns the title from that Article. Then, you can call `map` on the input list of Articles, and get a list of Strings that only contains the titles. If you're writing a function that could conceivably fail, you might want to make the output an Option, and use `flatMap`. This will simply discard any failed cases, giving you only a list of the successes. Or you can use the function that returns the output inside of an Option with `map` instead, and be able to see which cases were successful and which were not.
+
+`filter` is used with a function that takes an item of the input type (in this case probably either Article or String), and returns either true or false. This function is applied to each member of the list, and members that resulted in "true" are kept, while those that resulted in "false" are discarded.
+
+You can filter and extract the data in many ways. One thing you might try is to take a list of Articles, and use `map`, `flatMap`, and/or `filter` to return a list of HTML hyperlinks in the format `<a href=[the url of the article]>[the title of the article]</a>`. Feel free to modify this file and see how using different functions allows you to re-shape the data or extract different pieces of it.
+
+_If you have had difficulty with the previous step and wish to see/use an example implementation thus far, check out [the step2 directory](../src/main/scala/tutorials/basics/step2) in this repo._
+
 ## Saving and sharing data
 
 _In a real database, saved data would be stored on the hard drive, in some kind of files so that when the application is restarted the data will not be lost. For our example, we will not actually write to disk, but we will still "save" the data to an in-memory dictionary that will serve as a standing for file I/O operations._
@@ -207,25 +255,11 @@ Inside Table, `insert` should take an Article, assign it an unused ID integer, a
 
 `get` should retrieve the record corresponding to the specified ID, convert it back into an Article and return it, or return None if there is no record for that ID.
 
-_If you have had difficulty with the previous step and wish to see/use an example implementation thus far, check out [the step3 directory](../src/main/scala/tutorials/basics/step2) in this repo._
-
-## Using the formatted data
-
-[=----------------=]
-
-Use the functions from the last section to get a `Seq[Article]` with the data from the TSV file. Now, we can do other types of analysis and filtering, also using `map` and/or `flatMap`, and a similar function named `filter`. If you have a list of strings, and you want a list of integers, you could use either `map` or `flatMap`. If you definitely want to keep every value in the list, use `map`, and write a function to use with it that takes a String as its input type, and has Int as its output type, which we sometimes write as `String => Int`. If the funciton might fail sometimes (let's say you're converting a string to an integer, but the string is "a"), you can write a function that takes a `String` and returns an `Option[Int]` (also written `String => Option[Int]`), and use `flatMap` instead of `map`. This will go over the list, apply the function to each item, and create a list of results that only includes the successful items.
-
-First, take a look at the articles, and choose a word that appears in some but not all of the records. Think about what fields it does and does not occur in, and which fields you care about for matching records.
-
-`map` and `flatMap` are good for taking each record, and picking out which sub-set of the data you care about. Maybe you only want to keep the title--this is pretty stright-forward. Write a function that takes an Article as the input, and returns the title from that Article. Then, you can call `map` on the input list of Articles, and get a list of Strings that only contains the titles. If you're writing a function that could conceivably fail, you might want to make the output an Option, and use `flatMap`. This will simply discard any failed cases, giving you only a list of the successes. Or you can use the function that returns the output inside of an Option with `map` instead, and be able to see which cases were successful and which were not.
-
-`filter` is used with a function that takes an item of the input type (in this case probably either Article or String), and returns either true or false. This function is applied to each member of the list, and members that resulted in "true" are kept, while those that resulted in "false" are discarded.
-
-You can filter and extract the data in many ways. One thing you might try is to take a list of Articles, and use `map`, `flatMap`, and/or `filter` to return a list of HTML hyperlinks in the format `<a href=[the url of the article]>[the title of the article]</a>`.
-
-_If you have had difficulty with the previous step and wish to see/use an example implementation thus far, check out [the step2 directory](../src/main/scala/tutorials/basics/step2) in this repo._
+_If you have had difficulty with the previous step and wish to see/use an example implementation thus far, check out [the step3 directory](../src/main/scala/tutorials/basics/step3) in this repo._
 
 ### Use the database
+
+[=-----------------=]
 
 Now it's time to make a User Interface. Create a file named "Repl.scala", and paste this in:
 
