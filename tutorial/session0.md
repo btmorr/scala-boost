@@ -226,7 +226,7 @@ case class Database(name: String) {
   
   // functions to make it possible for the app using the Database to call methods from the Table, even though 
   // it is a private case class
-  def insert(article: Article): Option[Int] = currentTable.get.insert( article )
+  def insert(article: Article): Option[Int] = currentTable.flatMap( _.insert( article ) )
   def get(id: Int): Option[Article] = currentTable.flatMap( _.get( id ) )
 }
 
