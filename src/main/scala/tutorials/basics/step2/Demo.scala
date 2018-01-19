@@ -10,7 +10,7 @@ object Demo extends App {
     val rows = scala.io.Source.fromFile(filename).mkString.split("\n")
 
 
-    val articles = rows map Article.deserialize
+    val articles = rows.map(Article.deserialize(_))
     println("\n===>Articles:")
     articles.flatten.foreach(println)
 

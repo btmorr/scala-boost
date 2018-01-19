@@ -25,16 +25,16 @@ object Repl extends App {
           |  usedb <name>    -  Create/open a database by name
           |  usetable <name> -  Create/open a table within the current database by name
           |  insert <record> -  Add a record to the database. Records must be in the format:
-          |                       Title;Author;PublishedAt;Description;URL
+          |                       Title\tAuthor\tPublishedAt\tDescription\tURL
           |                     If successful, this command will display the ID of the record
           |                     that has been written. Example:
-          |                       > insert title;author;date;desc;url
+          |                       > insert title\tauthor\tdate\tdesc\turl
           |                       123
           |                       >
           |  get <uuid>      -  Get a record from the database by ID. To retrieve the record
           |                     written in the example above:
           |                       > get 123
-          |                       title;author;date;desc;url
+          |                       title\tauthor\tdate\tdesc\turl
           |                       >
           |
         """.stripMargin)
@@ -87,7 +87,7 @@ object Repl extends App {
             id match {
               case Some(i) =>
                 db.get( i ) match {
-                  case Some( article ) => println( article.serialize )
+                  case Some( article ) => println( article.serialize() )
                   case None => println( s"No article found for id: $i. Have you selected a table (`usetable <tablename>`)?")
                 }
               case None =>

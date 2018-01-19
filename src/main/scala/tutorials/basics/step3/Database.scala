@@ -33,7 +33,7 @@ private case class Table(name: String) {
     val nextID = records.keySet.max + 1
     // This Try isn't strictly necessary, but indicates that in a real database this operation could theoretically fail
     Try {
-      val record: String = article.serialize
+      val record: String = article.serialize()
       records = records + (nextID -> record)
       nextID
     }.toOption

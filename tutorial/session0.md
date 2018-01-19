@@ -80,7 +80,7 @@ As we build the app, we'll separate the components out into objects and function
 
 ### The REPL
 
-As the name suggests, the first thing a REPL does is read input from stdin (usually with a prompt). A package built into the language, `scala.io`, comes in handy. Check out [the scaladocs](http://www.scala-lang.org/api/2.11.11/#scala.io.package). Once you get the input, you may have to clean it (remove end-lines, etc). We'll worry about how the commands are formatted later, but for now just write a function that takes the whole input as a single string, and outputs a Seq[String], with no new-line characters. Now, replace the "Hello, World" line with a mutable variable named `command` (you can initialize it with an empty string, e.g.: `var command = ""`), and then a while loop that checks if the variable is equal to "exit". Inside the loop, make an immutable variable (a `val`) and assign it the return value of the function from `scala.io` that you use to get a line of input from the user. (From this point on unless specifically directed otherwise, all the code we add will be inside the while-loop, and all variables should be `val`s).
+As the name suggests, the first thing a REPL does is read input from stdin (usually with a prompt). A package built into the language, `scala.io`, comes in handy. Check out [the scaladocs](http://www.scala-lang.org/api/2.11.11/#scala.io.package). Once you get the input, you may have to clean it (remove end-lines, etc). We'll worry about how the commands are formatted later, but for now just write a function that takes the whole input as a single string, and outputs a Seq[String], with no new-line characters. Now, replace the "Hello, World" line with a mutable variable named `exitFlag` (and initialize it to false, e.g.: `var exitFlag = false`), and then a while loop that checks that flag. Inside the loop, make an immutable variable (a `val`) and assign it the return value of the function from `scala.io` that you use to get a line of input from the user. (From this point on unless specifically directed otherwise, all the code we add will be inside the while-loop, and all variables should be `val`s).
 
 The next step is "evaluate". In our case, this will be identifying which command has been entered, and selecting what to do based on this. First, write a function that takes a string, makes it lower-case, and splits it into two pieces: the first word before a space, and the rest. Return the resulting list. Use this function on the input from the user, and store the result in another varable (pro-tip: you could return a "tuple" instead of a list, and then use multiple assignment to name variables for the first word and the rest--without using a function, this would look like this: `val (head, tail) = ("insert", "the_rest_of_the_input")`).
 
@@ -91,7 +91,9 @@ There is a basic set of commands that a database management system ("DBMS") shou
 - `insert` should turn the remainder of the input and attempt to turn it into an instance of Article. If this is unsuccessful, print an error message, otherwise use the insert method of the current table.
 - `get` should turn the remainder of the input into an integer. If unsuccessful, print an error message, otherwise use the get method of the current table.
 
-Don't worry about the implementation yet. Use a "match" clause to check the command, with a "case" for each command listed above, and for now just print a message so you can verify that it selected the case you intended.
+The only command that needs any implementation yet is "exit", which should set the `exitFlag`. Otherwise, don't worry about the implementation yet. Use a "match" clause to check the command, with a "case" for each command listed above, and for now just print a message so you can verify that it selected the case you intended. Now you have an app that you can run!
+
+In a terminal, go to the root of the project and enter: `sbt run`. You should get a prompt, and be able to enter commands and see the response, and exit the repl by entering "exit".
 
 _If you have had difficulty with the previous step and wish to see/use an example implementation thus far, check out [the step0 directory](../src/main/scala/tutorials/basics/step0) in this repo._
 
@@ -113,14 +115,14 @@ As an additional note about design, there are several places where you could put
 case class Article(name: String)
 
 object Article {
-  def deserialize(input: String): Option[Article] = Some( Article( input ) )
+  def deserialize(input: String, delimiter: String): Option[Article] = Some( Article( input ) )
 }
 ```
 
 The most difficult portion of this is deciding exactly how a plain string gets broken apart so you can turn it into an instance of the Article case class. There isn't always a completely simple solution. One common pattern is called "comma-separated value" format, a.k.a. CSV. In a CSV record, there are commas in between each field, and you just split the string at the commas. This works very well for numerical data, but doesn't always work well for text, where the content of a field might include a comma as well and get split incorrectly. On the upside, when designing this app you get to choose what the input format looks like, so you can pick a separator that works better for text. You can choose whatever you like, but for the tutorial I'll use a semicolon. Write a deserialize function that splits the string and then tries to turn the result into an Article. If it is successful, return the resulting Article inside of a `Some`. If it fails, return a `None`. Once you've written the body of the function, you can test it by adding this:
 
 ```scala
-val testArticle = Article.deserialize( "Title\tAuthor\tPublishedAt\tDescription\tURL" ).get
+val testArticle = Article.deserialize( "Title\tAuthor\tPublishedAt\tDescription\tURL", "\t" ).get
 assert( 
   testArticle.title == "Title" && 
   testArticle.author == "Author" && 
@@ -259,18 +261,11 @@ _If you have had difficulty with the previous step and wish to see/use an exampl
 
 ### Use the database
 
-[=-----------------=]
-
-Now it's time to make a User Interface. Create a file named "Repl.scala", and paste this in:
+Now it's time to return to the User Interface. In "Repl.scala", you should have something similar to this:
 
 ```scala
 object Repl extends App {
   var exitFlag = false
-  val dbRootDir = ???
-
-  val databases: Map[String, Database] = Map.empty
-  var currentDb: Option[Database] = None
-  var currentTable: Option[Table] = None
 
   println("Welcome to NewbieDB! Type 'help' for a list of commands, or 'exit' to quit (commands are not case-sensitive).")
   while( !exitFlag ) {
@@ -300,13 +295,13 @@ object Repl extends App {
           |
         """.stripMargin)
 
-      case "usedb" => ???
+      case "usedb" => println( "usedb" )
 
-      case "usetable" => ???
+      case "usetable" => println( "usetable" )
 
-      case "insert" => ???
+      case "insert" => println( "insert" )
 
-      case "get" => ???
+      case "get" => println( "get" )
 
       case "exit" => exitFlag = true
 
@@ -316,10 +311,9 @@ object Repl extends App {
 }
 ```
 
-I've included a couple of guiding details that are a lot of work and not much learning, so that you can get right to the more interesting stuff. Do take a look though, because the text and whatnot may provide hints about the commands you need to implement. Note that there's plenty here you can modify, such as the character(s) used to separate fields in a record input. For the example, I picked ";;", because it won't occur accidentally in an article, whereas splitting on spaces, commas, etc could easily result in the string getting split up the wrong way and failing to write to the database.
+Now we need to add some variables to keep track of our current database and current table. The same technique that was used in `Database` to keep track of Tables can be used in the app to keep track of Databases. Add a `Map[String, Database]` val and a `currentDb: Option[Database]` var to the top of the App. Then implement "usedb" similarly to the `useTable` method on `Database`. On that topic, you've already implemented `useTable` on `Database`, so "usetable" can simply call that method on the current database.
 
-
-
+For the rest of the commands, go ahead and implement these using methods from `Database` and `Table`. Also take a look at the text of that "help" command above, because the text and whatnot may provide hints. Note that there's plenty here you can modify, such as the character(s) used to separate fields in a record input. For the example, I picked ";;", because it won't occur accidentally in an article, whereas splitting on spaces, commas, etc could easily result in the string getting split up the wrong way and failing to write to the database.
 
 _If you have had difficulty with the previous step and wish to see/use an example implementation thus far, check out [the step4 directory](../src/main/scala/tutorials/basics/step4) in this repo._
 
@@ -345,8 +339,6 @@ Unlike all prior functions, `droptable` and `dropdb` can be implemented complete
 Extra credit assignment #3: Add one or more `find` commands to Table (your choice, exact match or "contains").
 
 [Add FIND _ = _ to Table and REPL]
-
-_If you have had difficulty with the extra credit and wish to see/use example implementations, check out [the step5 directory](../src/main/scala/tutorials/basics/step5) in this repo._
 
 Extra extra extra credit: Modify the Database class so that it works with any data type (maybe some restrictions), rather than just Article. [no example provided yet--under construction]
 

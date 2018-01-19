@@ -8,15 +8,15 @@ case class Article(
   description: String,
   url: String
 ) {
-  def serialize: String =
-    Seq(title, author, publishedAt, description, url).mkString(Article.separator)
+  def serialize(delimiter: String=Article.defaultDelimiter): String =
+    Seq(title, author, publishedAt, description, url).mkString(delimiter)
 }
 
 object Article {
-  val separator = ";"
+  val defaultDelimiter = "\t"
 
-  val deserialize: (String => Option[Article]) = input => {
-    val splitInput = input.stripLineEnd.split(";")
+  def deserialize(input: String, delimiter: String=defaultDelimiter): Option[Article] = {
+    val splitInput = input.stripLineEnd.split(delimiter)
     splitInput match {
       case split if split.length == 5 => Some( Article(
         split(0), // head,
